@@ -12,13 +12,13 @@ struct State *newState(char name[20])
     return state;
 }
 
-struct Transition newTransition(struct State *start, struct State *end, int nPorts, char *ports[20], struct Condition *conditions)
+struct Transition newTransition(struct State *start, struct State *end, int nPorts, struct Condition *conditions)
 {
     struct Transition transition;
     transition.start = start;
     transition.end = end;
     transition.nPorts = nPorts;
-    memcpy(&transition.ports, &ports, sizeof(ports));
+    // memcpy(&transition.ports, &ports, sizeof(ports));
     transition.conditions = conditions;
     return transition;
 }
@@ -26,15 +26,15 @@ struct Transition newTransition(struct State *start, struct State *end, int nPor
 struct Condition newCondition(char port[20], char operation, char value[20])
 {
     struct Condition condition;
-    memcpy(&condition.port, &port, sizeof(port));
+    strcpy(condition.port, port);
     condition.operation = operation;
-    memcpy(&condition.value, &value, sizeof(value));
+    strcpy(condition.value, value);
     return condition;
 }
 
-void addTransition(struct Transition transition)
+void addTransition(struct Transition *transition)
 {
-    struct State *stateStart = transition.start;
+    struct State *stateStart = transition->start;
     if (stateStart->nTrans == 0)
     {
         stateStart->transitions = malloc(sizeof(struct Transition *));
