@@ -1,0 +1,2 @@
+cs: {teste1, teste2, teste3, }
+cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste2 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste3 &ports.portA = 50  &-> next(cs) = teste1 &

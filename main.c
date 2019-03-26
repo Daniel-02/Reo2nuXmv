@@ -1,31 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "headers/state.h"
-
-void caToNuxmv(struct State **states, int nStates)
-{
-    printf("cs: {");
-    for (size_t i = 0; i < nStates; i++)
-    {
-        printf("%s, ", states[i]->name);
-    }
-    printf("}\n");
-    struct Transition **transitions;
-    for (size_t i = 0; i < nStates; i++)
-    {
-        transitions = states[i]->transitions;
-        for (size_t j = 0; j < states[i]->nTrans; j++)
-        {
-            printf("cs=%s &", transitions[j]->start->name);
-            for (size_t k = 0; k < transitions[j]->nPorts; k++)
-            {
-                printf("ports.%s %c %s  &", transitions[j]->conditions[k].port, transitions[j]->conditions[k].operation, transitions[j]->conditions[k].value);
-            }
-            printf("-> next(cs) = %s &", transitions[j]->end->name);
-        }
-    }
-    printf("\n");
-}
+#include "headers/caToNuXmv.h"
 
 int main(void)
 {
