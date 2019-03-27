@@ -28,7 +28,7 @@ int main(void)
     states[1] = state2;
     states[2] = state3;
 
-    caToNuxmv(states, nStates);
+    startNuxmv(states, nStates);
 
     free(conditions);
     delState(state1);

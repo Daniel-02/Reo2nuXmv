@@ -1,0 +1,16 @@
+MODULE main
+VAR
+	time: 0..3;
+	automato: automato(time);
+ASSIGN
+	init(time) := 0;
+	next(time) := case
+		time < 3: time + 1;
+		TRUE: time;
+esac;
+
+MODULE automato(time)
+VAR
+	ports: portscs: {teste1, teste2, teste3, };
+TRANS
+	cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste2 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste3 &ports.portA = 50  &-> next(cs) = teste1 &;
