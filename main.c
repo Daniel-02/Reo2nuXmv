@@ -22,16 +22,20 @@ int main(void)
     addTransition(&transition2);
     addTransition(&transition3);
 
-    int nStates = 3;
-    struct State *states[nStates];
-    states[0] = state1;
-    states[1] = state2;
-    states[2] = state3;
+    struct Automato *automatoTeste = newAutomato("automato");
+    addState(state1, automatoTeste);
+    addState(state2, automatoTeste);
+    addState(state3, automatoTeste);
 
-    startNuxmv(states, nStates);
+    int nAutomatos = 2;
+    struct Automato *automatos[nAutomatos];
+    automatos[0] = automatoTeste;
+    automatos[1] = automatoTeste;
+    startNuxmv(automatos, nAutomatos);
 
     free(conditions);
-    delState(state1);
-    delState(state2);
-    delState(state3);
+    delAutomato(automatoTeste);
+    // delState(state1);
+    // delState(state2);
+    // delState(state3);
 }

@@ -30,7 +30,7 @@ void caToNuxmv(struct State **states, int nStates, FILE *f)
     fprintf(f, ";\n");
 }
 
-void startNuxmv(struct State **states, int nStates)
+void startNuxmv(struct Automato **automatos, int nAutomatos)
 {
     FILE *f = fopen("nuxmv.smv", "w");
     if (f == NULL)
@@ -41,7 +41,10 @@ void startNuxmv(struct State **states, int nStates)
 
     fprintf(f, "MODULE main\nVAR\n\ttime: 0..3;\n\t%s: %s(time);\n", "automato", "automato");
     fprintf(f, "ASSIGN\n\tinit(time) := 0;\n\tnext(time) := case\n\t\ttime < 3: time + 1;\n\t\tTRUE: time;\nesac;\n\n");
-    caToNuxmv(states, nStates, f);
+    for (size_t i = 0; i < nAutomatos; i++)
+    {
+        caToNuxmv(automatos[i]->states, automatos[i]->nStates, f);
+    }
 
     fclose(f);
 }
