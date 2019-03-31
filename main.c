@@ -10,14 +10,18 @@ int main(void)
     struct State *state3 = newState("teste3");
 
     struct Condition condition = {"portA", '=', "50"};
+    struct Condition conditionB = {"portB", '=', "30"};
     struct Condition *conditions = malloc(1 * sizeof(struct Condition));
     conditions[0] = condition;
+    struct Condition *conditions2 = malloc(2 * sizeof(struct Condition));
+    conditions2[0] = condition;
+    conditions2[1] = conditionB;
     printf("executando...\n");
     struct Transition transition1 = {state1, state3, 1, conditions};
     addTransition(&transition1);
     addTransition(&transition1);
     addTransition(&transition1);
-    struct Transition transition2 = {state2, state3, 1, conditions};
+    struct Transition transition2 = {state2, state3, 2, conditions2};
     struct Transition transition3 = {state3, state1, 1, conditions};
     addTransition(&transition2);
     addTransition(&transition3);

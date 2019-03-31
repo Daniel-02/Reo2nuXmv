@@ -68,8 +68,52 @@ struct Automato *newAutomato(char name[20])
     return automato;
 }
 
+void addPort(char port[20], struct Automato *automato)
+{
+    int exist = 0;
+    for (size_t i = 0; i < automato->nPorts; i++)
+    {
+        if (strcmp(port, automato->ports[i]) == 0)
+        {
+            exist = 1;
+        }
+    }
+    if (!exist)
+    {
+        if (automato->nPorts == 0)
+        {
+            automato->ports = malloc(sizeof(*automato->ports));
+            strcpy(automato->ports[0], port);
+            automato->nPorts = 1;
+        }
+        else
+        {
+            automato->ports = realloc(automato->ports, (automato->nPorts + 1) * sizeof(*automato->ports));
+            strcpy(automato->ports[automato->nPorts], port);
+            automato->nPorts++;
+        }
+    }
+}
+
+void addCondition(struct Condition *conditions, int nPorts, struct Automato *automato)
+{
+    for (size_t i = 0; i < nPorts; i++)
+    {
+        addPort(conditions[i].port, automato);
+    }
+}
+
+void addPorts(struct Transition **transitions, int nTrans, struct Automato *automato)
+{
+    for (size_t i = 0; i < nTrans; i++)
+    {
+        addCondition(transitions[i]->conditions, transitions[i]->nPorts, automato);
+    }
+}
+
 void addState(struct State *state, struct Automato *automato)
 {
+    addPorts(state->transitions, state->nTrans, automato);
     if (automato->nStates == 0)
     {
         automato->states = malloc(sizeof(struct State *));
@@ -93,6 +137,7 @@ void delAutomato(struct Automato *automato)
             delState(automato->states[i]);
         }
         free(automato->states);
+        free(automato->ports);
         free(automato);
     }
 }

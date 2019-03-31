@@ -3,6 +3,6 @@
 
 void startNuxmv(struct Automato **automato, int nAutomatos);
 
-void caToNuxmv(struct State **states, int nStates, FILE *f);
+void caToNuxmv(struct Automato *automato, FILE *f);
 
 #endif

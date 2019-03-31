@@ -11,11 +11,13 @@ esac;
 
 MODULE automato(time)
 VAR
-	ports: portscs: {teste1, teste2, teste3, };
+	ports: portscs: {teste1,teste2,teste3};
 TRANS
-	cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste2 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste3 &ports.portA = 50  &-> next(cs) = teste1 &;
+	((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste2 & ports.portA = 50 & ports.portB = 30) -> next(cs) = teste3) & ((cs = teste3 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste1);
+
 MODULE automato(time)
 VAR
-	ports: portscs: {teste1, teste2, teste3, };
+	ports: portscs: {teste1,teste2,teste3};
 TRANS
-	cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste1 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste2 &ports.portA = 50  &-> next(cs) = teste3 &cs=teste3 &ports.portA = 50  &-> next(cs) = teste1 &;
+	((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste2 & ports.portA = 50 & ports.portB = 30) -> next(cs) = teste3) & ((cs = teste3 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste1);
+

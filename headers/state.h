@@ -6,6 +6,8 @@ struct Automato
     char name[20];
     int nStates;
     struct State **states;
+    int nPorts;
+    char (*ports)[20];
 };
 
 struct State
