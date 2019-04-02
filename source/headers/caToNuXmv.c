@@ -51,6 +51,15 @@ void caToNuxmv(struct Automato *automato, FILE *f)
     // fprintf(f, ";\n");
 }
 
+productInSmv(struct Automato **automatos, int nAutomatos, FILE *f)
+{
+    
+    for (size_t i = 0; i < nAutomatos - 1; i++)
+    {
+        /* code */
+    }
+}
+
 void startNuxmv(struct Automato **automatos, int nAutomatos)
 {
     FILE *f = fopen("nuxmv.smv", "w");
@@ -66,6 +75,7 @@ void startNuxmv(struct Automato **automatos, int nAutomatos)
     {
         caToNuxmv(automatos[i], f);
     }
+    productInSmv(automatos, nAutomatos, f);
 
     fclose(f);
 }
