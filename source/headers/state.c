@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "state.h"
 
 struct State *newState(char name[20])
@@ -9,6 +10,7 @@ struct State *newState(char name[20])
         return NULL;
     strcpy(state->name, name);
     state->nTrans = 0;
+    state->transitions = NULL;
     return state;
 }
 
@@ -35,25 +37,47 @@ struct State *newState(char name[20])
 void addTransition(struct Transition *transition)
 {
     struct State *stateStart = transition->start;
-    if (stateStart->nTrans == 0)
+    // if (stateStart->nTrans == 0)
+    // {
+    //     stateStart->transitions = malloc(sizeof(struct Transition *));
+    //     stateStart->transitions[0] = transition;
+    //     stateStart->nTrans = 1;
+    // }
+    // else
+    // {
+    //     stateStart->transitions = realloc(stateStart->transitions, (stateStart->nTrans + 1) * sizeof(struct Transition));
+    //     stateStart->transitions[stateStart->nTrans] = transition;
+    //     stateStart->nTrans++;
+    // }
+    if (stateStart->transitions == NULL)
     {
-        stateStart->transitions = malloc(sizeof(struct Transition *));
-        stateStart->transitions[0] = transition;
-        stateStart->nTrans = 1;
+        stateStart->transitions = (struct TransitionList *)malloc(sizeof(struct TransitionList));
+        stateStart->transitions->transition = transition;
+        stateStart->transitions->nextTransition = NULL;
+        return;
     }
-    else
-    {
-        stateStart->transitions = realloc(stateStart->transitions, (stateStart->nTrans + 1) * sizeof(struct Transition));
-        stateStart->transitions[stateStart->nTrans] = transition;
-        stateStart->nTrans++;
-    }
+    struct TransitionList *tempTransition = stateStart->transitions;
+    while (tempTransition->nextTransition != NULL)
+        tempTransition = tempTransition->nextTransition;
+    tempTransition->nextTransition = (struct TransitionList *)malloc(sizeof(struct TransitionList));
+    tempTransition->nextTransition->transition = transition;
+    tempTransition->nextTransition->nextTransition = NULL;
+}
+
+void delTransitionList(struct TransitionList *transitions)
+{
+    if (transitions == NULL)
+        return;
+    delTransitionList(transitions->nextTransition);
+    free(transitions);
 }
 
 void delState(struct State *state)
 {
     if (state != NULL)
     {
-        free(state->transitions);
+        if (state->transitions != NULL)
+            delTransitionList(state->transitions);
         free(state);
     }
 }
@@ -65,6 +89,7 @@ struct Automato *newAutomato(char name[20])
         return NULL;
     strcpy(automato->name, name);
     automato->nStates = 0;
+    automato->states = NULL;
     return automato;
 }
 
@@ -103,41 +128,144 @@ void addCondition(struct Condition *conditions, int nPorts, struct Automato *aut
     }
 }
 
-void addPorts(struct Transition **transitions, int nTrans, struct Automato *automato)
+void addPorts(struct TransitionList *transitions, int nTrans, struct Automato *automato)
 {
-    for (size_t i = 0; i < nTrans; i++)
+    while (transitions != NULL)
     {
-        addCondition(transitions[i]->conditions, transitions[i]->nPorts, automato);
+        addCondition(transitions->transition->conditions, transitions->transition->nPorts, automato);
+        transitions = transitions->nextTransition;
     }
 }
 
 void addState(struct State *state, struct Automato *automato)
 {
     addPorts(state->transitions, state->nTrans, automato);
-    if (automato->nStates == 0)
+    // if (automato->nStates == 0)
+    // {
+    //     automato->states = malloc(sizeof(struct State *));
+    //     automato->states[0] = state;
+    //     automato->nStates = 1;
+    // }
+    // else
+    // {
+    //     automato->states = realloc(automato->states, (automato->nStates + 1) * sizeof(struct State));
+    //     automato->states[automato->nStates] = state;
+    //     automato->nStates++;
+    // }
+
+    if (automato->states == NULL)
     {
-        automato->states = malloc(sizeof(struct State *));
-        automato->states[0] = state;
-        automato->nStates = 1;
+        automato->states = (struct StateList *)malloc(sizeof(struct StateList));
+        automato->states->state = state;
+        automato->states->nextState = NULL;
+        return;
     }
-    else
-    {
-        automato->states = realloc(automato->states, (automato->nStates + 1) * sizeof(struct State));
-        automato->states[automato->nStates] = state;
-        automato->nStates++;
-    }
+    struct StateList *tempState = automato->states;
+    while (tempState->nextState != NULL)
+        tempState = tempState->nextState;
+    tempState->nextState = (struct StateList *)malloc(sizeof(struct StateList));
+    tempState->nextState->state = state;
+    tempState->nextState->nextState = NULL;
+}
+
+// void delStates(struct Automato *automato)
+// {
+//     if (automato != NULL)
+//     {
+//         while ()
+//         {
+//             delState(automato->states[i]);
+//         }
+//     }
+// }
+
+void delStatesList(struct StateList *states)
+{
+    if (states == NULL)
+        return;
+    delStatesList(states->nextState);
+    delState(states->state);
+    free(states);
 }
 
 void delAutomato(struct Automato *automato)
 {
     if (automato != NULL)
     {
-        for (size_t i = 0; i < automato->nStates; i++)
+        if (automato->states)
         {
-            delState(automato->states[i]);
+            delStatesList(automato->states);
         }
-        free(automato->states);
         free(automato->ports);
         free(automato);
     }
+}
+
+struct StringList *addString(struct StringList *stringlist, char *string)
+{
+    if (stringlist == NULL)
+    {
+        stringlist = (struct StringList *)malloc(sizeof(struct StringList));
+        stringlist->string = (char *)malloc(600 * sizeof(char));
+        strcpy(stringlist->string, string);
+        stringlist->nextString = NULL;
+        return stringlist;
+    }
+    struct StringList *tempString = stringlist;
+    while (tempString->nextString != NULL)
+        tempString = tempString->nextString;
+    tempString->nextString = (struct StringList *)malloc(sizeof(struct StringList));
+    tempString->nextString->string = (char *)malloc(600 * sizeof(char));
+    strcpy(tempString->nextString->string, string);
+    tempString->nextString->nextString = NULL;
+    return stringlist;
+}
+
+void delStringList(struct StringList *stringList)
+{
+    if (stringList == NULL)
+        return;
+    delStringList(stringList->nextString);
+    free(stringList->string);
+    free(stringList);
+}
+
+struct StringList *delString(struct StringList *stringList, char *string)
+{
+    if (stringList == NULL || string == NULL)
+    {
+        return stringList;
+    }
+    struct StringList *temp = stringList;
+    struct StringList *first = stringList;
+    if (strcmp(stringList->string, string) == 0)
+    {
+        temp = stringList->nextString;
+        free(stringList);
+        return temp;
+    }
+    stringList = stringList->nextString;
+    while (stringList != NULL)
+    {
+        if (strcmp(stringList->string, string) == 0)
+        {
+            temp->nextString = stringList->nextString;
+            free(stringList);
+            return first;
+        }
+        temp = stringList;
+        stringList = stringList->nextString;
+    }
+    return first;
+}
+
+struct StringList *cpyStringList(struct StringList *newList, struct StringList *stringList)
+{
+    if (stringList == NULL)
+        return NULL;
+    newList = (struct StringList *)malloc(sizeof(struct StringList));
+    newList->string = (char *)malloc(600 * sizeof(char));
+    strcpy(newList->string, stringList->string);
+    newList->nextString = cpyStringList(newList->nextString, stringList->nextString);
+    return newList;
 }

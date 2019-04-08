@@ -1,7 +1,7 @@
 MODULE main
 VAR
 	time: 0..3;
-	automato: automato(time);
+	prod: prod(time);
 ASSIGN
 	init(time) := 0;
 	next(time) := case
@@ -11,13 +11,55 @@ esac;
 
 MODULE automato(time)
 VAR
-	ports: portscs: {teste1,teste2,teste3};
+	ports: ports
+	cs: {teste1,teste2,teste3};
 TRANS
-	((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste2 & ports.portA = 50 & ports.portB = 30) -> next(cs) = teste3) & ((cs = teste3 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste1);
+	((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste2 & ports.portA = 50 & ports.portB = 30) -> next(cs) = teste3) & ((cs = teste3 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste2);
 
 MODULE automato(time)
 VAR
-	ports: portscs: {teste1,teste2,teste3};
+	ports: ports
+	cs: {teste1,teste2,teste3};
 TRANS
-	((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste2 & ports.portA = 50 & ports.portB = 30) -> next(cs) = teste3) & ((cs = teste3 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste1);
+	((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste1 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste3) & ((cs = teste2 & ports.portA = 50 & ports.portB = 30) -> next(cs) = teste3) & ((cs = teste3 & ports.portB = NULL & ports.portA = 50) -> next(cs) = teste2);
 
+MODULE prod(time)
+VAR
+	ports: ports
+	cs: {teste1teste1,teste1teste2,teste1teste3,teste2teste1,teste2teste2,teste2teste3,teste3teste1,teste3teste2,teste3teste3};
+TRANS
+	((cs = teste1teste1) -> ((next(cs) != teste1teste2) & (next(cs) != teste1teste3) & (next(cs) != teste2teste1) & (next(cs) != teste2teste2) & (next(cs) != teste2teste3) & (next(cs) != teste3teste1) & (next(cs) != teste3teste2)) &
+	((cs = teste1teste2) & (ports.portA = 50 & ports.portA = 50 & ports.portB = 30)  -> next(cs) = teste3teste3) -> next(cs) = teste3teste3) &
+	((cs = teste1teste2) & (ports.portA = 50 & ports.portA = 50 & ports.portB = 30)  -> next(cs) = teste3teste3) -> next(cs) = teste3teste3) &
+	((cs = teste1teste2) & (ports.portA = 50 & ports.portA = 50 & ports.portB = 30)  -> next(cs) = teste3teste3) -> next(cs) = teste3teste3) &
+	((cs = teste1teste2) -> ((next(cs) != teste1teste1) & (next(cs) != teste1teste3) & (next(cs) != teste2teste1) & (next(cs) != teste2teste2) & (next(cs) != teste2teste3) & (next(cs) != teste3teste1) & (next(cs) != teste3teste2)) &
+	((cs = teste1teste3) -> ((next(cs) != teste1teste1) & (next(cs) != teste1teste2) & (next(cs) != teste2teste1) & (next(cs) != teste2teste2) & (next(cs) != teste2teste3) & (next(cs) != teste3teste1) & (next(cs) != teste3teste3)) &
+	((cs = teste2teste1) -> ((next(cs) != teste1teste1) & (next(cs) != teste1teste2) & (next(cs) != teste1teste3) & (next(cs) != teste2teste2) & (next(cs) != teste2teste3) & (next(cs) != teste3teste1) & (next(cs) != teste3teste2) & (next(cs) != teste3teste3)) &
+	((cs = teste2teste2) -> ((next(cs) != teste1teste1) & (next(cs) != teste1teste2) & (next(cs) != teste1teste3) & (next(cs) != teste2teste1) & (next(cs) != teste2teste3) & (next(cs) != teste3teste1) & (next(cs) != teste3teste2) & (next(cs) != teste3teste3)) &
+	((cs = teste2teste3) -> ((next(cs) != teste1teste1) & (next(cs) != teste1teste2) & (next(cs) != teste1teste3) & (next(cs) != teste2teste1) & (next(cs) != teste2teste2) & (next(cs) != teste3teste1) & (next(cs) != teste3teste2) & (next(cs) != teste3teste3)) &
+	((cs = teste3teste1) -> ((next(cs) != teste1teste1) & (next(cs) != teste1teste2) & (next(cs) != teste1teste3) & (next(cs) != teste2teste1) & (next(cs) != teste2teste2) & (next(cs) != teste3teste2) & (next(cs) != teste3teste3)) &
+	((cs = teste3teste2) & (ports.portA = 50 & ports.portA = 50 & ports.portB = 30)  -> next(cs) = teste2teste3) -> next(cs) = teste2teste3) &
+	((cs = teste3teste2) -> ((next(cs) != teste1teste1) & (next(cs) != teste1teste2) & (next(cs) != teste1teste3) & (next(cs) != teste2teste1) & (next(cs) != teste2teste2) & (next(cs) != teste3teste1) & (next(cs) != teste3teste3)) &
+	((cs = teste3teste3) -> ((next(cs) != teste1teste1) & (next(cs) != teste1teste2) & (next(cs) != teste1teste3) & (next(cs) != teste2teste1) & (next(cs) != teste2teste3) & (next(cs) != teste3teste1) & (next(cs) != teste3teste2));
+INVAR
+	(((prod1.cs = teste1) & (prod2.cs = teste1)) <-> (cs = teste1teste1) &
+	(((prod1.cs = teste1) & (prod2.cs = teste2)) <-> (cs = teste1teste2) &
+	(((prod1.cs = teste1) & (prod2.cs = teste3)) <-> (cs = teste1teste3) &
+	(((prod1.cs = teste2) & (prod2.cs = teste1)) <-> (cs = teste2teste1) &
+	(((prod1.cs = teste2) & (prod2.cs = teste2)) <-> (cs = teste2teste2) &
+	(((prod1.cs = teste2) & (prod2.cs = teste3)) <-> (cs = teste2teste3) &
+	(((prod1.cs = teste3) & (prod2.cs = teste1)) <-> (cs = teste3teste1) &
+	(((prod1.cs = teste3) & (prod2.cs = teste2)) <-> (cs = teste3teste2) &
+	(((prod1.cs = teste3) & (prod2.cs = teste3)) <-> (cs = teste3teste3);
+
+MODULE portsModule
+FROZENVAR
+	portA: array 0..3 of {NULL, 30, 50};
+	portA: array 0..3 of {NULL, 30, 50};
+ASSIGN
+	init(portA[0]) := 30;
+	init(portB[0]) := NULL;
+	init(portA[1]) := NULL;
+	init(portB[1]) := 50;
+	init(portA[2]) := 50;
+	init(portB[2]) := 30;
