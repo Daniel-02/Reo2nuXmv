@@ -82,6 +82,17 @@ void delState(struct State *state)
     }
 }
 
+struct State *findState(struct StateList *states, char name[20])
+{
+    while (states != NULL)
+    {
+        if (strcmp(states->state->name, name) == 0)
+            return states->state;
+        states = states->nextState;
+    }
+    return NULL;
+}
+
 struct Automato *newAutomato(char name[20])
 {
     struct Automato *automato = (struct Automato *)malloc(sizeof(struct Automato));
@@ -120,11 +131,12 @@ void addPort(char port[20], struct Automato *automato)
     }
 }
 
-void addCondition(struct Condition *conditions, int nPorts, struct Automato *automato)
+void addCondition(struct ConditionList *conditions, int nPorts, struct Automato *automato)
 {
-    for (size_t i = 0; i < nPorts; i++)
+    while (conditions)
     {
-        addPort(conditions[i].port, automato);
+        addPort(conditions->condition->port, automato);
+        conditions = conditions->nextCondition;
     }
 }
 
@@ -268,4 +280,40 @@ struct StringList *cpyStringList(struct StringList *newList, struct StringList *
     strcpy(newList->string, stringList->string);
     newList->nextString = cpyStringList(newList->nextString, stringList->nextString);
     return newList;
+}
+
+struct AutomatoList *addAutomato(struct AutomatoList *automatoList, struct Automato *automato)
+{
+    if (automatoList == NULL)
+    {
+        automatoList = (struct AutomatoList *)malloc(sizeof(struct AutomatoList));
+        automatoList->automato = automato;
+        automatoList->nextAutomato = NULL;
+        return automatoList;
+    }
+    struct AutomatoList *tempAutomato = automatoList;
+    while (tempAutomato->nextAutomato != NULL)
+        tempAutomato = tempAutomato->nextAutomato;
+    tempAutomato->nextAutomato = (struct AutomatoList *)malloc(sizeof(struct AutomatoList));
+    tempAutomato->nextAutomato->automato = automato;
+    tempAutomato->nextAutomato->nextAutomato = NULL;
+    return automatoList;
+}
+
+struct ConditionList *addConditionToList(struct ConditionList *conditionList, struct Condition *condition)
+{
+    if (conditionList == NULL)
+    {
+        conditionList = (struct ConditionList *)malloc(sizeof(struct ConditionList));
+        conditionList->condition = condition;
+        conditionList->nextCondition = NULL;
+        return conditionList;
+    }
+    struct ConditionList *tempCondition = conditionList;
+    while (tempCondition->nextCondition != NULL)
+        tempCondition = tempCondition->nextCondition;
+    tempCondition->nextCondition = (struct ConditionList *)malloc(sizeof(struct ConditionList));
+    tempCondition->nextCondition->condition = condition;
+    tempCondition->nextCondition->nextCondition = NULL;
+    return conditionList;
 }

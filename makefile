@@ -1,12 +1,15 @@
-# My makefile
-
-all: CATONUXMV STATE
-	gcc source/main.c objects/caToNuXmv.o objects/state.o -o teste
+all: CATONUXMV STATE INPUT
+	gcc src/main.c objects/caToNuXmv.o objects/state.o objects/input.o -o teste
 CATONUXMV:
-	gcc -c source/headers/caToNuXmv.c -o objects/caToNuXmv.o
+	mkdir -p objects
+	gcc -c src/headers/caToNuXmv.c -o objects/caToNuXmv.o
 STATE: 
-	gcc -c source/headers/state.c -o objects/state.o
-debug: CATONUXMV STATE
-	gcc -g source/main.c objects/caToNuXmv.o objects/state.o -o teste
+	mkdir -p objects
+	gcc -c src/headers/state.c -o objects/state.o
+INPUT: 
+	mkdir -p objects
+	gcc -c src/headers/input.c -o objects/input.o
+debug: CATONUXMV STATE INPUT
+	gcc -g src/main.c objects/caToNuXmv.o objects/state.o objects/input.o  -o teste
 clean:
 	rm -rf objects/*.o

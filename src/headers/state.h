@@ -22,7 +22,7 @@ struct Transition
     struct State *start;
     struct State *end;
     int nPorts;
-    struct Condition *conditions;
+    struct ConditionList *conditions;
 };
 
 struct Condition
@@ -50,6 +50,18 @@ struct StringList
     struct StringList *nextString;
 };
 
+struct AutomatoList
+{
+    struct Automato *automato;
+    struct AutomatoList *nextAutomato;
+};
+
+struct ConditionList
+{
+    struct Condition *condition;
+    struct ConditionList *nextCondition;
+};
+
 struct State *newState(char name[20]);
 
 void addTransition(struct Transition *transition);
@@ -62,6 +74,8 @@ void addState(struct State *state, struct Automato *automato);
 
 void delStates(struct Automato *automato);
 
+struct State *findState(struct StateList *states, char name[20]);
+
 void delAutomato(struct Automato *automato);
 
 struct StringList *addString(struct StringList *stringlist, char *string);
@@ -71,5 +85,9 @@ struct StringList *delString(struct StringList *stringlist, char *string);
 void delStringList(struct StringList *stringList);
 
 struct StringList *cpyStringList(struct StringList *newList, struct StringList *stringList);
+
+struct AutomatoList *addAutomato(struct AutomatoList *automatoList, struct Automato *automato);
+
+struct ConditionList *addConditionToList(struct ConditionList *conditionList, struct Condition *condition);
 
 #endif

@@ -6,13 +6,15 @@
 void nullPorts(struct Automato *automato, struct Transition *transition, FILE *f)
 {
     int exists = 0;
+    struct ConditionList *conditions = transition->conditions;
     for (size_t i = 0; i < automato->nPorts; i++)
     {
         exists = 0;
-        for (size_t j = 0; j < transition->nPorts; j++)
+        while (conditions != NULL)
         {
-            if (strcmp(automato->ports[i], transition->conditions[j].port) == 0)
+            if (strcmp(automato->ports[i], conditions->condition->port) == 0)
                 exists = 1;
+            conditions = conditions->nextCondition;
         }
         if (!exists)
             fprintf(f, "ports.%s = NULL & ", automato->ports[i]);
@@ -23,7 +25,7 @@ void caToNuxmv(struct Automato *automato, FILE *f)
 {
     int nStates = automato->nStates;
     struct StateList *states = automato->states;
-    fprintf(f, "MODULE %s(time)\nVAR\n\tports: ", "automato");
+    fprintf(f, "MODULE %s(time)\nVAR\n\tports: ", automato->name);
     fprintf(f, "ports\n");
     fprintf(f, "\tcs: {");
     while (states != NULL)
@@ -35,46 +37,45 @@ void caToNuxmv(struct Automato *automato, FILE *f)
     fprintf(f, "};\n");
     fprintf(f, "TRANS\n\t");
     struct TransitionList *transitions;
+    struct ConditionList *conditions;
     while (states != NULL)
     {
         transitions = states->state->transitions;
         while (transitions != NULL)
         {
             fprintf(f, "((cs = %s & ", transitions->transition->start->name);
-            nullPorts(automato, transitions->transition, f);
-            for (size_t k = 0; k < transitions->transition->nPorts; k++)
+            // nullPorts(automato, transitions->transition, f);
+            conditions = transitions->transition->conditions;
+            while (conditions != NULL)
             {
-                fprintf(f, "ports.%s %c %s%s", transitions->transition->conditions[k].port, transitions->transition->conditions[k].operation,
-                        transitions->transition->conditions[k].value, k < transitions->transition->nPorts - 1 ? " & " : ") ");
+                fprintf(f, "ports.%s %c %s%s", transitions->transition->conditions->condition->port,
+                        transitions->transition->conditions->condition->operation,
+                        transitions->transition->conditions->condition->value, conditions->nextCondition != NULL ? " & " : ") ");
+                conditions = conditions->nextCondition;
             }
             fprintf(f, "-> next(cs) = %s)%s", transitions->transition->end->name, states->nextState != NULL ? " & " : ";\n\n");
             transitions = transitions->nextTransition;
         }
         states = states->nextState;
     }
-    // fprintf(f, ";\n");
 }
 
 struct StringList *portsIntersection(struct Transition *transition, struct Automato *automato)
 {
-    // int minPorts = transition->nPorts < automato->nPorts ? transition->nPorts : automato->nPorts;
-    // char **intersec = malloc(minPorts * sizeof(char));
-    // for (size_t i = 0; i < minPorts; i++)
-    // {
-    //     intersec[i] = malloc(20 * sizeof(char));
-    // }
     struct StringList *list = NULL;
     char *concat = (char *)malloc(60 * sizeof(char));
-    for (size_t i = 0; i < transition->nPorts; i++)
+    struct ConditionList *conditions = transition->conditions;
+    while (conditions != NULL)
     {
         for (size_t j = 0; j < automato->nPorts; j++)
         {
-            if (strcmp(transition->conditions[i].port, automato->ports[j]) == 0)
+            if (strcmp(conditions->condition->port, automato->ports[j]) == 0)
             {
                 strcpy(concat, automato->ports[j]);
                 list = addString(list, concat);
             }
         }
+        conditions = conditions->nextCondition;
     }
     return list;
 }
@@ -135,28 +136,36 @@ int equalIntersections(struct StringList *list1, struct StringList *list2)
 int equalPorts(struct Transition *transition1, struct Transition *transition2)
 {
     int equal = 0;
-    struct Transition *bigger;
-    struct Transition *lesser;
+    struct ConditionList *biggerConditions;
+    struct ConditionList *lesserConditions;
+    struct ConditionList *tempLesserConditions;
     if (transition1->nPorts > transition2->nPorts)
     {
-        bigger = transition1;
-        lesser = transition2;
+        biggerConditions = transition1->conditions;
+        lesserConditions = transition2->conditions;
     }
     else
     {
-        bigger = transition2;
-        lesser = transition1;
+        biggerConditions = transition2->conditions;
+        lesserConditions = transition1->conditions;
     }
-    for (size_t i = 0; i < bigger->nPorts; i++)
+    tempLesserConditions = lesserConditions;
+    while (biggerConditions != NULL)
     {
-        for (size_t j = 0; j < lesser->nPorts; j++)
+        while (lesserConditions != NULL)
         {
-            if (strcmp(bigger->conditions[i].port, lesser->conditions[j].port) == 0)
+            if (strcmp(biggerConditions->condition->port, lesserConditions->condition->port) == 0)
+            {
                 equal = 1;
+                break;
+            }
+            lesserConditions = lesserConditions->nextCondition;
         }
         if (!equal)
             return 0;
         equal = 0;
+        biggerConditions = biggerConditions->nextCondition;
+        lesserConditions = tempLesserConditions;
     }
     return 1;
 }
@@ -195,9 +204,9 @@ void printToNuXmv(struct StringList *trans, struct StringList *states, struct St
     }
 }
 
-void productInSmv(struct Automato **automatos, int nAutomatos, FILE *f)
+void productInSmv(struct AutomatoList *automatos, FILE *f)
 {
-    struct Automato *automato1 = automatos[0];
+    struct Automato *automato1 = automatos->automato;
     struct Automato *automato2;
     char *concat = (char *)malloc(60 * sizeof(char));
     char *transString = (char *)malloc(60 * sizeof(char));
@@ -212,11 +221,12 @@ void productInSmv(struct Automato **automatos, int nAutomatos, FILE *f)
     struct StringList *invar = NULL;
     struct StringList *states = NULL;
     struct StringList *inalcStates = NULL;
+    struct ConditionList *conditions;
     int firstPass = 1;
 
-    for (size_t i = 1; i < nAutomatos; i++)
+    while (automatos->nextAutomato != NULL)
     {
-        automato2 = automatos[i];
+        automato2 = automatos->nextAutomato->automato;
         states1 = automato1->states;
         while (states1 != NULL)
         {
@@ -269,17 +279,21 @@ void productInSmv(struct Automato **automatos, int nAutomatos, FILE *f)
                                 strcpy(portString, "");
                                 strcpy(transString, "");
                                 snprintf(transString, 60, "((cs = %s%s) & (", states1->state->name, states2->state->name);
-                                for (size_t j = 0; j < transitions1->transition->nPorts; j++)
+                                conditions = transitions1->transition->conditions;
+                                while (conditions != NULL)
                                 {
-                                    snprintf(portString, 60, "ports.%s %c %s & ", transitions1->transition->conditions[j].port, transitions1->transition->conditions[j].operation,
-                                             transitions1->transition->conditions[j].value);
+                                    snprintf(portString, 60, "ports.%s %c %s & ", transitions1->transition->conditions->condition->port, transitions1->transition->conditions->condition->operation,
+                                             transitions1->transition->conditions->condition->value);
                                     strcat(transString, portString);
+                                    conditions = conditions->nextCondition;
                                 }
-                                for (size_t j = 0; j < transitions2->transition->nPorts; j++)
+                                conditions = transitions2->transition->conditions;
+                                while (conditions != NULL)
                                 {
-                                    snprintf(portString, 60, "ports.%s %c %s%s", transitions2->transition->conditions[j].port, transitions2->transition->conditions[j].operation,
-                                             transitions2->transition->conditions[j].value, j < transitions2->transition->nPorts - 1 ? " & " : ") ");
+                                    snprintf(portString, 60, "ports.%s %c %s%s", transitions2->transition->conditions->condition->port, transitions2->transition->conditions->condition->operation,
+                                             transitions2->transition->conditions->condition->value, conditions->nextCondition != NULL ? " & " : ") ");
                                     strcat(transString, portString);
+                                    conditions = conditions->nextCondition;
                                 }
                                 snprintf(portString, 60, " -> next(cs) = %s%s)", transitions1->transition->end->name, transitions2->transition->end->name);
                                 strcat(transString, portString);
@@ -322,6 +336,93 @@ void productInSmv(struct Automato **automatos, int nAutomatos, FILE *f)
     }
 }
 
+void automatoFromProduct(struct Automato **automatos, int nAutomatos, FILE *f)
+{
+    struct Automato *automato1 = automatos[0];
+    struct Automato *automato2;
+    char *concat = (char *)malloc(60 * sizeof(char));
+    char *transString = (char *)malloc(60 * sizeof(char));
+    char *portString = (char *)malloc(6000 * sizeof(char));
+    struct StringList *intersection1 = NULL;
+    struct StringList *intersection2 = NULL;
+    struct StateList *states1;
+    struct StateList *states2;
+    struct TransitionList *transitions1 = NULL;
+    struct TransitionList *transitions2 = NULL;
+    struct State *tempState = NULL;
+    int firstPass = 1;
+
+    for (size_t i = 1; i < nAutomatos; i++)
+    {
+        automato2 = automatos[i];
+        states1 = automato1->states;
+        states2 = automato2->states;
+        states1 = automato1->states;
+        while (states1 != NULL)
+        {
+            states2 = automato2->states;
+            while (states2 != NULL)
+            {
+                snprintf(concat, 600, "%s%s", states1->state->name, states2->state->name);
+                tempState = newState(concat);
+                states2 = states2->nextState;
+            }
+            states1 = states1->nextState;
+        }
+        states1 = automato1->states;
+        states2 = automato2->states;
+        while (states1 != NULL)
+        {
+            while (states2 != NULL)
+            {
+                transitions1 = states1->state->transitions;
+                while (transitions1 != NULL)
+                {
+                    intersection1 = portsIntersection(transitions1->transition, automato2);
+                    if (intersection1 == NULL)
+                    {
+                        snprintf(concat, 600, "%s%s", transitions1->transition->end->name, states2->state->name);
+                    }
+                    transitions2 = states2->state->transitions;
+                    while (transitions2 != NULL)
+                    {
+                        intersection2 = portsIntersection(transitions2->transition, automato1);
+                        if (intersection2 == NULL && firstPass)
+                        {
+                        }
+                        if (equalIntersections(intersection1, intersection2))
+                        {
+                            if (!equalPorts(transitions1->transition, transitions2->transition))
+                            {
+                            }
+                        }
+                        transitions2 = transitions2->nextTransition;
+                    }
+                    transitions1 = transitions1->nextTransition;
+                    firstPass = 0;
+                }
+                if (states1->state->transitions == NULL)
+                {
+                    transitions2 = states2->state->transitions;
+                    while (transitions2 != NULL)
+                    {
+                        intersection2 = portsIntersection(transitions2->transition, automato1);
+                        if (intersection2 == NULL)
+                        {
+                        }
+                        transitions2 = transitions2->nextTransition;
+                    }
+                }
+                snprintf(transString, 600, "((cs = %s%s) -> (", states1->state->name, states2->state->name);
+                states2 = states2->nextState;
+            }
+            states2 = automato2->states;
+            states1 = states1->nextState;
+        }
+        // printToNuXmv(trans, states, invar, f);
+    }
+}
+
 void portsToNuXmv(FILE *f)
 {
     fprintf(f, "MODULE portsModule\nFROZENVAR\n\tportA: array 0..3 of {NULL, 30, 50};\n\tportA: array 0..3 of {NULL, 30, 50};\n");
@@ -331,8 +432,9 @@ void portsToNuXmv(FILE *f)
     fprintf(f, "\tinit(portA[2]) := 50;\n\tinit(portB[2]) := 30;\n");
 }
 
-void startNuxmv(struct Automato **automatos, int nAutomatos)
+void startNuxmv(struct AutomatoList *automatos)
 {
+    struct AutomatoList *automatoList = automatos;
     FILE *f = fopen("nuxmv.smv", "w");
     if (f == NULL)
     {
@@ -342,11 +444,12 @@ void startNuxmv(struct Automato **automatos, int nAutomatos)
 
     fprintf(f, "MODULE main\nVAR\n\ttime: 0..3;\n\t%s: %s(time);\n", "prod", "prod");
     fprintf(f, "ASSIGN\n\tinit(time) := 0;\n\tnext(time) := case\n\t\ttime < 3: time + 1;\n\t\tTRUE: time;\nesac;\n\n");
-    for (size_t i = 0; i < nAutomatos; i++)
+    while (automatoList != NULL)
     {
-        caToNuxmv(automatos[i], f);
+        caToNuxmv(automatoList->automato, f);
+        automatoList = automatoList->nextAutomato;
     }
-    productInSmv(automatos, nAutomatos, f);
+    // productInSmv(automatos, f);
     portsToNuXmv(f);
 
     fclose(f);

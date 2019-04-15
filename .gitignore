@@ -1,9 +1,14 @@
-.vscode/c_cpp_properties.json
+.vscode/*
+.vscode
 teste
+*.o
+.vscode/c_cpp_properties.json
 .vscode/ipch/23806c463aa7a835/main.ipch
 .vscode/ipch/23806c463aa7a835/mmap_address.bin
 .vscode/ipch/57717cbec57e3cdd/caToNuXmv.ipch
 .vscode/ipch/57717cbec57e3cdd/mmap_address.bin
 .vscode/ipch/91c1ae6d0079d1a0/caToNuXmv.ipch
 .vscode/ipch/91c1ae6d0079d1a0/mmap_address.bin
-*.o
+.vscode/ipch/2ee73da54e2c9f2c/caToNuXmv.ipch
+.vscode/ipch/3a74fbbcffdc3d32/state.ipch
+.vscode/ipch/3a74fbbcffdc3d32/state.ipch

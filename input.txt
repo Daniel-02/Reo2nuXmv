@@ -1,0 +1,4 @@
+fifo(a,b)
+fifo(b,c)
+fifo(b,c)
+

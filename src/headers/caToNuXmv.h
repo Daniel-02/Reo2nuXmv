@@ -1,7 +1,7 @@
 #ifndef CATONUXMV_HEADER_GUARD
 #define CATONUXMV_HEADER_GUARD
 
-void startNuxmv(struct Automato **automato, int nAutomatos);
+void startNuxmv(struct AutomatoList *automato);
 
 void caToNuxmv(struct Automato *automato, FILE *f);
 
