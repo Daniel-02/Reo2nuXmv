@@ -64,11 +64,27 @@ void addTransition(struct Transition *transition)
     tempTransition->nextTransition->nextTransition = NULL;
 }
 
+void delConditionList(struct ConditionList *conditions)
+{
+    if (!conditions)
+        return;
+    delConditionList(conditions->nextCondition);
+    free(conditions->condition);
+    free(conditions);
+}
+
+void delTransition(struct Transition *transition)
+{
+    delConditionList(transition->conditions);
+    free(transition);
+}
+
 void delTransitionList(struct TransitionList *transitions)
 {
     if (transitions == NULL)
         return;
     delTransitionList(transitions->nextTransition);
+    delTransition(transitions->transition);
     free(transitions);
 }
 
@@ -316,4 +332,13 @@ struct ConditionList *addConditionToList(struct ConditionList *conditionList, st
     tempCondition->nextCondition->condition = condition;
     tempCondition->nextCondition->nextCondition = NULL;
     return conditionList;
+}
+
+void delAutomatoList(struct AutomatoList *automatos)
+{
+    if (!automatos)
+        return;
+    delAutomatoList(automatos->nextAutomato);
+    delAutomato(automatos->automato);
+    free(automatos);
 }

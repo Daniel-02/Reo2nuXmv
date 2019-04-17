@@ -12,6 +12,8 @@ int main(void)
     if (f != NULL)
     {
         automatos = readInput(f);
+        startNuxmv(automatos);
+        delAutomatoList(automatos);
         // fclose(f);
     }
     // struct State *state1 = newState("teste1");
@@ -42,7 +44,6 @@ int main(void)
     // struct Automato *automatos[nAutomatos];
     // automatos[0] = automatoTeste;
     // automatos[1] = automatoTeste;
-    startNuxmv(automatos);
 
     // free(conditions);
     // delAutomato(automatoTeste);

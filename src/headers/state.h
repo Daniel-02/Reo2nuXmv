@@ -76,7 +76,7 @@ void delStates(struct Automato *automato);
 
 struct State *findState(struct StateList *states, char name[20]);
 
-void delAutomato(struct Automato *automato);
+void delAutomatoList(struct AutomatoList *automatos);
 
 struct StringList *addString(struct StringList *stringlist, char *string);
 
