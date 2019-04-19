@@ -38,6 +38,8 @@ void caToNuxmv(struct Automato *automato, FILE *f)
     fprintf(f, "TRANS\n\t");
     struct TransitionList *transitions;
     struct ConditionList *conditions;
+    char operation[2];
+    operation[1] = '\0';
     while (states != NULL)
     {
         transitions = states->state->transitions;
@@ -48,12 +50,13 @@ void caToNuxmv(struct Automato *automato, FILE *f)
             conditions = transitions->transition->conditions;
             while (conditions != NULL)
             {
-                fprintf(f, "ports.%s %c %s%s", transitions->transition->conditions->condition->port,
-                        transitions->transition->conditions->condition->operation,
-                        transitions->transition->conditions->condition->value, conditions->nextCondition != NULL ? " & " : ") ");
+                operation[0] = conditions->condition->operation;
+                fprintf(f, "ports.%s %s %s%s", conditions->condition->port,
+                        conditions->condition->operation == '!' ? "!=" : operation,
+                        conditions->condition->value, conditions->nextCondition != NULL ? " & " : ") ");
                 conditions = conditions->nextCondition;
             }
-            fprintf(f, "-> next(cs) = %s)%s", transitions->transition->end->name, states->nextState != NULL ? " & " : ";\n\n");
+            fprintf(f, "-> next(cs) = %s)%s", transitions->transition->end->name, (transitions->nextTransition != NULL || states->nextState != NULL) ? " & " : ";\n\n");
             transitions = transitions->nextTransition;
         }
         states = states->nextState;
@@ -282,16 +285,16 @@ void productInSmv(struct AutomatoList *automatos, FILE *f)
                                 conditions = transitions1->transition->conditions;
                                 while (conditions != NULL)
                                 {
-                                    snprintf(portString, 60, "ports.%s %c %s & ", transitions1->transition->conditions->condition->port, transitions1->transition->conditions->condition->operation,
-                                             transitions1->transition->conditions->condition->value);
+                                    snprintf(portString, 60, "ports.%s %c %s & ", conditions->condition->port, conditions->condition->operation,
+                                             conditions->condition->value);
                                     strcat(transString, portString);
                                     conditions = conditions->nextCondition;
                                 }
                                 conditions = transitions2->transition->conditions;
                                 while (conditions != NULL)
                                 {
-                                    snprintf(portString, 60, "ports.%s %c %s%s", transitions2->transition->conditions->condition->port, transitions2->transition->conditions->condition->operation,
-                                             transitions2->transition->conditions->condition->value, conditions->nextCondition != NULL ? " & " : ") ");
+                                    snprintf(portString, 60, "ports.%s %c %s%s", conditions->condition->port, conditions->condition->operation,
+                                             conditions->condition->value, conditions->nextCondition != NULL ? " & " : ") ");
                                     strcat(transString, portString);
                                     conditions = conditions->nextCondition;
                                 }

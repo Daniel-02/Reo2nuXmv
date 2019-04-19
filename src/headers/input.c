@@ -82,6 +82,154 @@ struct Automato *createFifo(char *ports, int nAuto)
     return automato;
 }
 
+struct Automato *createSync(char *ports, int nAuto)
+{
+    char port1[20];
+    char port2[20];
+    memset(port1, 0, sizeof(port1));
+    memset(port2, 0, sizeof(port2));
+    int i = 0, j = 0;
+    while (ports[i] != ',')
+    {
+        port1[i] = ports[i];
+        i++;
+    }
+    i++;
+    while (ports[i] != '\0')
+    {
+        port2[j] = ports[i];
+        i++;
+        j++;
+    }
+    struct State *state1 = newState("q0");
+    struct ConditionList *conditions1 = NULL;
+    struct Condition *condition = (struct Condition *)malloc(sizeof(struct Condition));
+    strcpy(condition->port, port1);
+    condition->operation = '=';
+    strcpy(condition->value, "port.");
+    strcat(condition->value, port2);
+    conditions1 = addConditionToList(conditions1, condition);
+    condition = (struct Condition *)malloc(sizeof(struct Condition));
+    strcpy(condition->port, port2);
+    condition->operation = '=';
+    strcpy(condition->value, "port.");
+    strcat(condition->value, port1);
+    conditions1 = addConditionToList(conditions1, condition);
+    struct Transition *transition = (struct Transition *)malloc(sizeof(struct Transition));
+    transition->start = state1;
+    transition->end = state1;
+    transition->nPorts = 2;
+    transition->conditions = conditions1;
+    addTransition(transition);
+    char *automatoName = (char *)malloc(600 * sizeof(char));
+    snprintf(automatoName, 600, "sync%d", nAuto);
+    struct Automato *automato = newAutomato(automatoName);
+    addState(state1, automato);
+    return automato;
+}
+
+struct Automato *createLossy(char *ports, int nAuto)
+{
+    char port1[20];
+    char port2[20];
+    memset(port1, 0, sizeof(port1));
+    memset(port2, 0, sizeof(port2));
+    int i = 0, j = 0;
+    while (ports[i] != ',')
+    {
+        port1[i] = ports[i];
+        i++;
+    }
+    i++;
+    while (ports[i] != '\0')
+    {
+        port2[j] = ports[i];
+        i++;
+        j++;
+    }
+    struct State *state1 = newState("q0");
+    struct ConditionList *conditions1 = NULL;
+    struct ConditionList *conditions2 = NULL;
+    struct Condition *condition = (struct Condition *)malloc(sizeof(struct Condition));
+    strcpy(condition->port, port1);
+    condition->operation = '=';
+    strcpy(condition->value, "port.");
+    strcat(condition->value, port2);
+    conditions1 = addConditionToList(conditions1, condition);
+    condition = (struct Condition *)malloc(sizeof(struct Condition));
+    strcpy(condition->port, port2);
+    condition->operation = '=';
+    strcpy(condition->value, "port.");
+    strcat(condition->value, port1);
+    conditions1 = addConditionToList(conditions1, condition);
+    condition = (struct Condition *)malloc(sizeof(struct Condition));
+    strcpy(condition->port, port1);
+    condition->operation = '!';
+    strcpy(condition->value, "NULL");
+    conditions2 = addConditionToList(conditions2, condition);
+    struct Transition *transition = (struct Transition *)malloc(sizeof(struct Transition));
+    transition->start = state1;
+    transition->end = state1;
+    transition->nPorts = 2;
+    transition->conditions = conditions1;
+    addTransition(transition);
+    transition = (struct Transition *)malloc(sizeof(struct Transition));
+    transition->start = state1;
+    transition->end = state1;
+    transition->nPorts = 2;
+    transition->conditions = conditions2;
+    addTransition(transition);
+    char *automatoName = (char *)malloc(600 * sizeof(char));
+    snprintf(automatoName, 600, "lossySync%d", nAuto);
+    struct Automato *automato = newAutomato(automatoName);
+    addState(state1, automato);
+    return automato;
+}
+
+struct Automato *createSyncDrain(char *ports, int nAuto)
+{
+    char port1[20];
+    char port2[20];
+    memset(port1, 0, sizeof(port1));
+    memset(port2, 0, sizeof(port2));
+    int i = 0, j = 0;
+    while (ports[i] != ',')
+    {
+        port1[i] = ports[i];
+        i++;
+    }
+    i++;
+    while (ports[i] != '\0')
+    {
+        port2[j] = ports[i];
+        i++;
+        j++;
+    }
+    struct State *state1 = newState("q0");
+    struct ConditionList *conditions1 = NULL;
+    struct Condition *condition = (struct Condition *)malloc(sizeof(struct Condition));
+    strcpy(condition->port, port1);
+    condition->operation = '!';
+    strcpy(condition->value, "NULL");
+    conditions1 = addConditionToList(conditions1, condition);
+    condition = (struct Condition *)malloc(sizeof(struct Condition));
+    strcpy(condition->port, port2);
+    condition->operation = '!';
+    strcpy(condition->value, "NULL");
+    conditions1 = addConditionToList(conditions1, condition);
+    struct Transition *transition = (struct Transition *)malloc(sizeof(struct Transition));
+    transition->start = state1;
+    transition->end = state1;
+    transition->nPorts = 2;
+    transition->conditions = conditions1;
+    addTransition(transition);
+    char *automatoName = (char *)malloc(600 * sizeof(char));
+    snprintf(automatoName, 600, "syncDrain%d", nAuto);
+    struct Automato *automato = newAutomato(automatoName);
+    addState(state1, automato);
+    return automato;
+}
+
 struct AutomatoList *
 readInput(FILE *f)
 {
@@ -115,6 +263,16 @@ readInput(FILE *f)
         if (strcmp(command, "fifo") == 0)
         {
             temp = createFifo(ports, nAuto);
+            automatoList = addAutomato(automatoList, temp);
+        }
+        if (strcmp(command, "sync") == 0)
+        {
+            temp = createSync(ports, nAuto);
+            automatoList = addAutomato(automatoList, temp);
+        }
+        if (strcmp(command, "lossySync") == 0)
+        {
+            temp = createLossy(ports, nAuto);
             automatoList = addAutomato(automatoList, temp);
         }
     }

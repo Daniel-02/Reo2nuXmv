@@ -16,19 +16,19 @@ VAR
 TRANS
 	((cs = q0 & ports.a = 0) -> next(cs) = p0) & ((cs = q0 & ports.a = 1) -> next(cs) = p1) & ((cs = p0 & ports.b = 0) -> next(cs) = q0) & ((cs = p1 & ports.b = 1) -> next(cs) = q0);
 
-MODULE fifo2(time)
+MODULE sync2(time)
 VAR
 	ports: ports
-	cs: {q0,p0,p1};
+	cs: {q0};
 TRANS
-	((cs = q0 & ports.b = 0) -> next(cs) = p0) & ((cs = q0 & ports.b = 1) -> next(cs) = p1) & ((cs = p0 & ports.c = 0) -> next(cs) = q0) & ((cs = p1 & ports.c = 1) -> next(cs) = q0);
+	((cs = q0 & ports.b = port.c & ports.c = port.b) -> next(cs) = q0);
 
-MODULE fifo3(time)
+MODULE lossySync3(time)
 VAR
 	ports: ports
-	cs: {q0,p0,p1};
+	cs: {q0};
 TRANS
-	((cs = q0 & ports.b = 0) -> next(cs) = p0) & ((cs = q0 & ports.b = 1) -> next(cs) = p1) & ((cs = p0 & ports.c = 0) -> next(cs) = q0) & ((cs = p1 & ports.c = 1) -> next(cs) = q0);
+	((cs = q0 & ports.c = port.d & ports.d = port.c) -> next(cs) = q0) & ((cs = q0 & ports.c != NULL) -> next(cs) = q0);
 
 MODULE portsModule
 FROZENVAR
