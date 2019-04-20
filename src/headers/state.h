@@ -7,7 +7,8 @@ struct Automato
     int nStates;
     struct StateList *states;
     int nPorts;
-    char (*ports)[20];
+    // char (*ports)[20];
+    struct StringList *ports;
 };
 
 struct State
@@ -22,7 +23,9 @@ struct Transition
     struct State *start;
     struct State *end;
     int nPorts;
-    struct ConditionList *conditions;
+    // struct ConditionList *conditions;
+    struct StringList *ports;
+    char *condition;
 };
 
 struct Condition
@@ -89,5 +92,7 @@ struct StringList *cpyStringList(struct StringList *newList, struct StringList *
 struct AutomatoList *addAutomato(struct AutomatoList *automatoList, struct Automato *automato);
 
 struct ConditionList *addConditionToList(struct ConditionList *conditionList, struct Condition *condition);
+
+int existString(struct StringList *list, char *string);
 
 #endif

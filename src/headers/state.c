@@ -75,7 +75,9 @@ void delConditionList(struct ConditionList *conditions)
 
 void delTransition(struct Transition *transition)
 {
-    delConditionList(transition->conditions);
+    // delConditionList(transition->conditions);
+    delStringList(transition->ports);
+    free(transition->condition);
     free(transition);
 }
 
@@ -120,54 +122,38 @@ struct Automato *newAutomato(char name[20])
     return automato;
 }
 
-void addPort(char port[20], struct Automato *automato)
+int existString(struct StringList *list, char *string)
 {
-    int exist = 0;
-    for (size_t i = 0; i < automato->nPorts; i++)
+    while (list != NULL)
     {
-        if (strcmp(port, automato->ports[i]) == 0)
-        {
-            exist = 1;
-        }
+        if (strcmp(list->string, string) == 0)
+            return 1;
+        list = list->nextString;
     }
-    if (!exist)
-    {
-        if (automato->nPorts == 0)
-        {
-            automato->ports = malloc(sizeof(*automato->ports));
-            strcpy(automato->ports[0], port);
-            automato->nPorts = 1;
-        }
-        else
-        {
-            automato->ports = realloc(automato->ports, (automato->nPorts + 1) * sizeof(*automato->ports));
-            strcpy(automato->ports[automato->nPorts], port);
-            automato->nPorts++;
-        }
-    }
+    return 0;
 }
 
-void addCondition(struct ConditionList *conditions, int nPorts, struct Automato *automato)
+void addPorts(struct TransitionList *transitions, struct Automato *automato)
 {
-    while (conditions)
-    {
-        addPort(conditions->condition->port, automato);
-        conditions = conditions->nextCondition;
-    }
-}
-
-void addPorts(struct TransitionList *transitions, int nTrans, struct Automato *automato)
-{
+    struct StringList *temp;
     while (transitions != NULL)
     {
-        addCondition(transitions->transition->conditions, transitions->transition->nPorts, automato);
+        temp = transitions->transition->ports;
+        while (temp != NULL)
+        {
+            if (!existString(automato->ports, temp->string))
+            {
+                automato->ports = addString(automato->ports, temp->string);
+            }
+            temp = temp->nextString;
+        }
         transitions = transitions->nextTransition;
     }
 }
 
 void addState(struct State *state, struct Automato *automato)
 {
-    addPorts(state->transitions, state->nTrans, automato);
+    addPorts(state->transitions, automato);
     // if (automato->nStates == 0)
     // {
     //     automato->states = malloc(sizeof(struct State *));

@@ -9,26 +9,54 @@ ASSIGN
 		TRUE: time;
 esac;
 
-MODULE fifo1(time)
+MODULE sync1(time)
+VAR
+	ports: ports
+	cs: {q0};
+TRANS
+	((cs = q0 & ports.b = ports.c)-> next(cs) = q0);
+
+MODULE lossySync2(time)
+VAR
+	ports: ports
+	cs: {q0};
+TRANS
+	((cs = q0 & ports.c = ports.d)-> next(cs) = q0) & ((cs = q0 & ports.d = NULL & ports.c != NULL)-> next(cs) = q0);
+
+MODULE fifo3(time)
 VAR
 	ports: ports
 	cs: {q0,p0,p1};
 TRANS
-	((cs = q0 & ports.a = 0) -> next(cs) = p0) & ((cs = q0 & ports.a = 1) -> next(cs) = p1) & ((cs = p0 & ports.b = 0) -> next(cs) = q0) & ((cs = p1 & ports.b = 1) -> next(cs) = q0);
+	((cs = q0 & ports.b = NULL & ports.a = 0)-> next(cs) = p0) & ((cs = q0 & ports.b = NULL & ports.a = 1)-> next(cs) = p1) & ((cs = p0 & ports.a = NULL & ports.b = 0)-> next(cs) = q0) & ((cs = p1 & ports.a = NULL & ports.b = 1)-> next(cs) = q0);
 
-MODULE sync2(time)
+MODULE syncDrain4(time)
 VAR
 	ports: ports
 	cs: {q0};
 TRANS
-	((cs = q0 & ports.b = port.c & ports.c = port.b) -> next(cs) = q0);
+	((cs = q0 & ports.a != NULL & ports.b != NULL)-> next(cs) = q0);
 
-MODULE lossySync3(time)
+MODULE asyncDrain5(time)
 VAR
 	ports: ports
 	cs: {q0};
 TRANS
-	((cs = q0 & ports.c = port.d & ports.d = port.c) -> next(cs) = q0) & ((cs = q0 & ports.c != NULL) -> next(cs) = q0);
+	((cs = q0 & ports.b = NULL & ports.a != NULL)-> next(cs) = q0) & ((cs = q0 & ports.a = NULL & ports.b != NULL)-> next(cs) = q0);
+
+MODULE merger6(time)
+VAR
+	ports: ports
+	cs: {q0};
+TRANS
+	((cs = q0 & ports.c = NULL & ports.a = ports.b)-> next(cs) = q0) & ((cs = q0 & ports.b = NULL & ports.a = ports.c)-> next(cs) = q0);
+
+MODULE replicator7(time)
+VAR
+	ports: ports
+	cs: {q0};
+TRANS
+	((cs = q0 & ports.a = ports.b & ports.a = ports.c)-> next(cs) = q0);
 
 MODULE portsModule
 FROZENVAR
