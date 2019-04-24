@@ -81,6 +81,8 @@ struct State *findState(struct StateList *states, char name[20]);
 
 void delAutomatoList(struct AutomatoList *automatos);
 
+struct StateList *addStateToList(struct StateList *states, struct State *state);
+
 struct StringList *addString(struct StringList *stringlist, char *string);
 
 struct StringList *delString(struct StringList *stringlist, char *string);
@@ -89,10 +91,16 @@ void delStringList(struct StringList *stringList);
 
 struct StringList *cpyStringList(struct StringList *newList, struct StringList *stringList);
 
+struct StringList *concatStringList(struct StringList *firstList, struct StringList *secondList);
+
 struct AutomatoList *addAutomato(struct AutomatoList *automatoList, struct Automato *automato);
 
 struct ConditionList *addConditionToList(struct ConditionList *conditionList, struct Condition *condition);
 
 int existString(struct StringList *list, char *string);
+
+struct StringList *unionStringList(struct StringList *firstList, struct StringList *secondList);
+
+int listLength(struct StringList *list);
 
 #endif

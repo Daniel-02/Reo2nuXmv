@@ -154,32 +154,41 @@ void addPorts(struct TransitionList *transitions, struct Automato *automato)
 void addState(struct State *state, struct Automato *automato)
 {
     addPorts(state->transitions, automato);
-    // if (automato->nStates == 0)
-    // {
-    //     automato->states = malloc(sizeof(struct State *));
-    //     automato->states[0] = state;
-    //     automato->nStates = 1;
-    // }
-    // else
-    // {
-    //     automato->states = realloc(automato->states, (automato->nStates + 1) * sizeof(struct State));
-    //     automato->states[automato->nStates] = state;
-    //     automato->nStates++;
-    // }
 
-    if (automato->states == NULL)
+    // if (automato->states == NULL)
+    // {
+    //     automato->states = (struct StateList *)malloc(sizeof(struct StateList));
+    //     automato->states->state = state;
+    //     automato->states->nextState = NULL;
+    //     return;
+    // }
+    // struct StateList *tempState = automato->states;
+    // while (tempState->nextState != NULL)
+    //     tempState = tempState->nextState;
+    // tempState->nextState = (struct StateList *)malloc(sizeof(struct StateList));
+    // tempState->nextState->state = state;
+    // tempState->nextState->nextState = NULL;
+    automato->states = addStateToList(automato->states, state);
+}
+
+struct StateList *addStateToList(struct StateList *states, struct State *state)
+{
+    struct StateList *first = states;
+    struct StateList *temp = (struct StateList *)malloc(sizeof(struct StateList));
+    temp->state = state;
+    temp->nextState = NULL;
+    if (states == NULL)
     {
-        automato->states = (struct StateList *)malloc(sizeof(struct StateList));
-        automato->states->state = state;
-        automato->states->nextState = NULL;
-        return;
+        return temp;
     }
-    struct StateList *tempState = automato->states;
-    while (tempState->nextState != NULL)
-        tempState = tempState->nextState;
-    tempState->nextState = (struct StateList *)malloc(sizeof(struct StateList));
-    tempState->nextState->state = state;
-    tempState->nextState->nextState = NULL;
+    while (states != NULL)
+    {
+        if (states->nextState == NULL)
+        {
+            states->nextState == temp;
+            return first;
+        }
+    }
 }
 
 // void delStates(struct Automato *automato)
@@ -327,4 +336,62 @@ void delAutomatoList(struct AutomatoList *automatos)
     delAutomatoList(automatos->nextAutomato);
     delAutomato(automatos->automato);
     free(automatos);
+}
+
+struct StringList *concatStringList(struct StringList *firstList, struct StringList *secondList)
+{
+    if (firstList == NULL)
+    {
+        if (secondList == NULL)
+            return NULL;
+        return secondList;
+    }
+    if (secondList == NULL)
+        return firstList;
+    struct StringList *temp = firstList;
+    while (firstList != NULL)
+    {
+        if (firstList->nextString == NULL)
+        {
+            firstList->nextString = secondList;
+            return temp;
+        }
+    }
+}
+
+struct StringList *unionStringList(struct StringList *firstList, struct StringList *secondList)
+{
+    if (firstList == NULL)
+    {
+        if (secondList == NULL)
+            return NULL;
+        return cpyStringList(NULL, secondList);
+    }
+    if (secondList == NULL)
+        return cpyStringList(NULL, firstList);
+    struct StringList *unionStringList = NULL;
+    while (firstList != NULL)
+    {
+        if (!existString(unionStringList, firstList->string))
+            unionStringList = addString(unionStringList, firstList->string);
+        firstList = firstList->nextString;
+    }
+    while (secondList != NULL)
+    {
+        if (!existString(unionStringList, secondList->string))
+            unionStringList = addString(unionStringList, secondList->string);
+        secondList = secondList->nextString;
+    }
+    return unionStringList;
+}
+
+int listLength(struct StringList *list)
+{
+    int length = 0;
+    while (list != NULL)
+    {
+        length++;
+        list = list->nextString;
+    }
+    return length;
 }

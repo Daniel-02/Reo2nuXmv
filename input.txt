@@ -1,8 +1,3 @@
 sync(b,c)
-lossySync(c,d)
-fifo(a,b)
-syncDrain(a,b)
-asyncDrain(a,b)
-merger(a,b,c)
-replicator(a,b,c)
-
+sync(c,d)
+lossySync(d,b)
