@@ -395,3 +395,33 @@ int listLength(struct StringList *list)
     }
     return length;
 }
+
+void printsList(struct StringList *list)
+{
+    while (list != NULL)
+    {
+        printf("%s\n", list->string);
+        list = list->nextString;
+    }
+}
+void printTransition(struct Transition *transition)
+{
+    printf("%s->%s %d\n", transition->start->name, transition->end->name, transition->nPorts);
+    printsList(transition->ports);
+    printf("%s\n------------------------------------\n", transition->condition);
+}
+
+void printTransitions(struct TransitionList *transisitions)
+{
+    while (transisitions != NULL)
+    {
+        printTransition(transisitions->transition);
+        transisitions = transisitions->nextTransition;
+    }
+}
+
+void printState(struct State *state)
+{
+    printf("%s--%d\n", state->name, state->nTrans);
+    printTransitions(state->transitions);
+}

@@ -103,4 +103,6 @@ struct StringList *unionStringList(struct StringList *firstList, struct StringLi
 
 int listLength(struct StringList *list);
 
+void printState(struct State *state);
+
 #endif

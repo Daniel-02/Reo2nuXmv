@@ -1,0 +1,33 @@
+MODULE main
+VAR
+	time: 0..3;
+	automato: sync1sync2sync3(time);
+ASSIGN
+	init(time) := 0;
+	next(time) := case
+		time < 3: time + 1;
+		TRUE: time;
+esac;
+
+MODULE sync1sync2sync3(time)
+VAR
+	ports: portsModule
+	cs: {q0q0q0};
+TRANS
+	((cs = q0q0q0 & ports.b[time] = ports.c[time] & ports.c[time] = ports.d[time] & ports.d[time] = ports.b[time])-> next(cs) = q0q0q0);
+
+MODULE portsModule
+FROZENVAR
+	b : array 0..3 of{NULL, 0, 1};
+	c : array 0..3 of{NULL, 0, 1};
+	d : array 0..3 of{NULL, 0, 1};
+ASSIGN
+	init(b[0]) := 0;
+	init(b[1]) := 0;
+	init(b[2]) := 0;
+	init(c[0]) := 0;
+	init(c[1]) := 0;
+	init(c[2]) := 0;
+	init(d[0]) := 0;
+	init(d[1]) := 0;
+	init(d[2]) := 0;
