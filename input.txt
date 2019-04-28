@@ -1,3 +1,3 @@
-sync(b,c)
-sync(c,d)
-sync(d,b)
+merger(a,b,c)
+syncDrain(a,b)
+fifo(b,c)

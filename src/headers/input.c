@@ -27,7 +27,7 @@ struct Automato *createSync(char *ports, int nAuto)
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
     portsList = addString(portsList, port2);
-    snprintf(condition, 600, "ports.%s[time] = ports.%s[time]", port1, port2);
+    snprintf(condition, 600, "ports.%s[time] != NULL & ports.%s[time] = ports.%s[time]", port1, port1, port2);
     struct Transition *transition = (struct Transition *)malloc(sizeof(struct Transition));
     transition->start = state1;
     transition->end = state1;
@@ -66,7 +66,7 @@ struct Automato *createLossy(char *ports, int nAuto)
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
     portsList = addString(portsList, port2);
-    snprintf(condition, 600, "ports.%s[time] = ports.%s[time]", port1, port2);
+    snprintf(condition, 600, "ports.%s[time] != NULL & ports.%s[time] = ports.%s[time]", port1, port1, port2);
     struct Transition *transition = (struct Transition *)malloc(sizeof(struct Transition));
     transition->start = state1;
     transition->end = state1;
@@ -287,8 +287,8 @@ struct Automato *createMerger(char *ports, int nAuto)
     char *condition = (char *)malloc(600 * sizeof(char));
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
-    portsList = addString(portsList, port2);
-    snprintf(condition, 600, "ports.%s[time] = ports.%s[time]", port1, port2);
+    portsList = addString(portsList, port3);
+    snprintf(condition, 600, "ports.%s[time] != NULL & ports.%s[time] = ports.%s[time]", port3, port1, port3);
     struct Transition *transition = (struct Transition *)malloc(sizeof(struct Transition));
     transition->start = state1;
     transition->end = state1;
@@ -298,9 +298,9 @@ struct Automato *createMerger(char *ports, int nAuto)
     addTransition(transition);
     condition = (char *)malloc(600 * sizeof(char));
     portsList = NULL;
-    portsList = addString(portsList, port1);
+    portsList = addString(portsList, port2);
     portsList = addString(portsList, port3);
-    snprintf(condition, 600, "ports.%s[time] = ports.%s[time]", port1, port3);
+    snprintf(condition, 600, "ports.%s[time] != NULL & ports.%s[time] = ports.%s[time]", port3, port2, port3);
     transition = (struct Transition *)malloc(sizeof(struct Transition));
     transition->start = state1;
     transition->end = state1;
@@ -350,7 +350,7 @@ struct Automato *createReplicator(char *ports, int nAuto)
     portsList = addString(portsList, port1);
     portsList = addString(portsList, port2);
     portsList = addString(portsList, port3);
-    snprintf(condition, 600, "ports.%s[time] = ports.%s[time] & ports.%s[time] = ports.%s[time]", port1, port2, port1, port3);
+    snprintf(condition, 600, "ports.%s[time] != NULL & ports.%s[time] = ports.%s[time] & ports.%s[time] = ports.%s[time]", port1, port1, port2, port1, port3);
     struct Transition *transition = (struct Transition *)malloc(sizeof(struct Transition));
     transition->start = state1;
     transition->end = state1;

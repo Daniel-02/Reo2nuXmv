@@ -3,7 +3,7 @@
 
 struct Automato
 {
-    char name[20];
+    char name[60];
     int nStates;
     struct StateList *states;
     int nPorts;
@@ -104,5 +104,13 @@ struct StringList *unionStringList(struct StringList *firstList, struct StringLi
 int listLength(struct StringList *list);
 
 void printState(struct State *state);
+
+void printStateList(struct StateList *states);
+
+void printAutomato(struct Automato *automato);
+
+void printsList(struct StringList *list);
+
+void addStateWithoutPorts(struct State *state, struct Automato *automato);
 
 #endif

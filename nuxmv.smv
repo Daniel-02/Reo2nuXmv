@@ -9,61 +9,67 @@ ASSIGN
 		TRUE: time;
 esac;
 
-MODULE sync1(time)
+MODULE merger1(time)
 VAR
 	ports: portsModule
 	cs: {q0};
 TRANS
-	((cs = q0 & ports.b[time] = ports.c[time])-> next(cs) = q0);
+	((cs = q0 & ports.b = NULL & ports.c[time] != NULL & ports.a[time] = ports.c[time])-> next(cs) = q0) &
+	((cs = q0 & ports.a = NULL & ports.c[time] != NULL & ports.b[time] = ports.c[time])-> next(cs) = q0);
 
-MODULE sync2(time)
+MODULE syncDrain2(time)
 VAR
 	ports: portsModule
 	cs: {q0};
 TRANS
-	((cs = q0 & ports.c[time] = ports.d[time])-> next(cs) = q0);
+	((cs = q0 & ports.a[time] != NULL & ports.b[time] != NULL)-> next(cs) = q0);
 
-MODULE sync3(time)
+MODULE fifo3(time)
 VAR
 	ports: portsModule
-	cs: {q0};
+	cs: {q0,p0,p1};
 TRANS
-	((cs = q0 & ports.d[time] = ports.b[time])-> next(cs) = q0);
+	((cs = q0 & ports.c = NULL & ports.b[time] = 0)-> next(cs) = p0) &
+	((cs = q0 & ports.c = NULL & ports.b[time] = 1)-> next(cs) = p1) &
+	((cs = p0 & ports.b = NULL & ports.c[time] = 0)-> next(cs) = q0) &
+	((cs = p1 & ports.b = NULL & ports.c[time] = 1)-> next(cs) = q0);
 
-MODULE sync1sync2(time)
+MODULE merger1syncDrain2(time)
 VAR
-	prod1: sync1(time);
-	prod2: sync2(time);
+	prod1: merger1(time);
+	prod2: syncDrain2(time);
 	ports: portsModule;
 	cs: {q0q0};
-TRANS
-	((cs = q0q0) & (ports.b[time] = ports.c[time] & ports.c[time] = ports.d[time]) -> next(cs) = q0q0);
 INVAR
-	(((prod1.cs = q0) & (prod2.cs = q0)) <-> (cs = q0q0);
+	(((prod1.cs = q0) & (prod2.cs = q0)) <-> (cs = q0q0));
 
-MODULE sync1sync2sync3(time)
+MODULE merger1syncDrain2fifo3(time)
 VAR
-	prod1: sync1sync2(time);
-	prod2: sync3(time);
+	prod1: merger1syncDrain2(time);
+	prod2: fifo3(time);
 	ports: portsModule;
-	cs: {q0q0q0};
+	cs: {q0q0q0,q0q0p0,q0q0p1};
 TRANS
-	((cs = q0q0q0) & (ports.b[time] = ports.c[time] & ports.c[time] = ports.d[time] & ports.d[time] = ports.b[time]) -> next(cs) = q0q0q0);
+	((cs = q0q0q0) -> ((next(cs) != q0q0p0) & (next(cs) != q0q0p1)) &
+	((cs = q0q0p0) -> ((next(cs) != q0q0q0) & (next(cs) != q0q0p1)) &
+	((cs = q0q0p1) -> ((next(cs) != q0q0q0) & (next(cs) != q0q0p0));
 INVAR
-	(((prod1.cs = q0q0) & (prod2.cs = q0)) <-> (cs = q0q0q0);
+	(((prod1.cs = q0q0) & (prod2.cs = q0)) <-> (cs = q0q0q0)) &
+	(((prod1.cs = q0q0) & (prod2.cs = p0)) <-> (cs = q0q0p0)) &
+	(((prod1.cs = q0q0) & (prod2.cs = p1)) <-> (cs = q0q0p1));
 
 MODULE portsModule
 FROZENVAR
-	b : array 0..3 of{NULL, 0, 1};
+	a : array 0..3 of{NULL, 0, 1};
 	c : array 0..3 of{NULL, 0, 1};
-	d : array 0..3 of{NULL, 0, 1};
+	b : array 0..3 of{NULL, 0, 1};
 ASSIGN
-	init(b[0]) := 0;
-	init(b[1]) := 0;
-	init(b[2]) := 0;
+	init(a[0]) := 0;
+	init(a[1]) := 0;
+	init(a[2]) := 0;
 	init(c[0]) := 0;
 	init(c[1]) := 0;
 	init(c[2]) := 0;
-	init(d[0]) := 0;
-	init(d[1]) := 0;
-	init(d[2]) := 0;
+	init(b[0]) := 0;
+	init(b[1]) := 0;
+	init(b[2]) := 0;

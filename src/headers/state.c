@@ -37,18 +37,7 @@ struct State *newState(char name[20])
 void addTransition(struct Transition *transition)
 {
     struct State *stateStart = transition->start;
-    // if (stateStart->nTrans == 0)
-    // {
-    //     stateStart->transitions = malloc(sizeof(struct Transition *));
-    //     stateStart->transitions[0] = transition;
-    //     stateStart->nTrans = 1;
-    // }
-    // else
-    // {
-    //     stateStart->transitions = realloc(stateStart->transitions, (stateStart->nTrans + 1) * sizeof(struct Transition));
-    //     stateStart->transitions[stateStart->nTrans] = transition;
-    //     stateStart->nTrans++;
-    // }
+    stateStart->nTrans++;
     if (stateStart->transitions == NULL)
     {
         stateStart->transitions = (struct TransitionList *)malloc(sizeof(struct TransitionList));
@@ -143,6 +132,7 @@ void addPorts(struct TransitionList *transitions, struct Automato *automato)
         {
             if (!existString(automato->ports, temp->string))
             {
+                automato->nPorts++;
                 automato->ports = addString(automato->ports, temp->string);
             }
             temp = temp->nextString;
@@ -151,29 +141,22 @@ void addPorts(struct TransitionList *transitions, struct Automato *automato)
     }
 }
 
+void addStateWithoutPorts(struct State *state, struct Automato *automato)
+{
+    automato->states = addStateToList(automato->states, state);
+    automato->nStates++;
+}
+
 void addState(struct State *state, struct Automato *automato)
 {
     addPorts(state->transitions, automato);
-
-    // if (automato->states == NULL)
-    // {
-    //     automato->states = (struct StateList *)malloc(sizeof(struct StateList));
-    //     automato->states->state = state;
-    //     automato->states->nextState = NULL;
-    //     return;
-    // }
-    // struct StateList *tempState = automato->states;
-    // while (tempState->nextState != NULL)
-    //     tempState = tempState->nextState;
-    // tempState->nextState = (struct StateList *)malloc(sizeof(struct StateList));
-    // tempState->nextState->state = state;
-    // tempState->nextState->nextState = NULL;
     automato->states = addStateToList(automato->states, state);
+    automato->nStates++;
 }
 
 struct StateList *addStateToList(struct StateList *states, struct State *state)
 {
-    struct StateList *first = states;
+    struct StateList *tempStates = states;
     struct StateList *temp = (struct StateList *)malloc(sizeof(struct StateList));
     temp->state = state;
     temp->nextState = NULL;
@@ -181,14 +164,12 @@ struct StateList *addStateToList(struct StateList *states, struct State *state)
     {
         return temp;
     }
-    while (states != NULL)
+    while (tempStates->nextState != NULL)
     {
-        if (states->nextState == NULL)
-        {
-            states->nextState == temp;
-            return first;
-        }
+        tempStates = tempStates->nextState;
     }
+    tempStates->nextState = temp;
+    return states;
 }
 
 // void delStates(struct Automato *automato)
@@ -404,6 +385,7 @@ void printsList(struct StringList *list)
         list = list->nextString;
     }
 }
+
 void printTransition(struct Transition *transition)
 {
     printf("%s->%s %d\n", transition->start->name, transition->end->name, transition->nPorts);
@@ -424,4 +406,24 @@ void printState(struct State *state)
 {
     printf("%s--%d\n", state->name, state->nTrans);
     printTransitions(state->transitions);
+}
+
+void printAutomato(struct Automato *automato)
+{
+    printf("-----Automato: %s-----\n", automato->name);
+    printf("Ports: %d\n", automato->nPorts);
+    printsList(automato->ports);
+    printf("-----States: %d-----\n", automato->nStates);
+    struct StateList *states = automato->states;
+    printStateList(automato->states);
+}
+
+void printStateList(struct StateList *states)
+{
+    while (states != NULL)
+    {
+        printState(states->state);
+        printf("----------------------\n");
+        states = states->nextState;
+    }
 }

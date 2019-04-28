@@ -32,24 +32,31 @@ void caToNuxmv(struct Automato *automato, FILE *f)
     }
     states = automato->states;
     fprintf(f, "};\n");
-    fprintf(f, "TRANS\n\t");
     struct TransitionList *transitions;
     struct ConditionList *conditions;
     char operation[2];
     operation[1] = '\0';
+    int printTrans = 1;
     while (states != NULL)
     {
         transitions = states->state->transitions;
         while (transitions != NULL)
         {
+            if (printTrans)
+            {
+                fprintf(f, "TRANS\n\t");
+                printTrans = 0;
+            }
             fprintf(f, "((cs = %s & ", transitions->transition->start->name);
             nullPorts(automato, transitions->transition, f);
             fprintf(f, "%s)-> next(cs) = %s)%s", transitions->transition->condition,
-                    transitions->transition->end->name, (transitions->nextTransition != NULL || states->nextState != NULL) ? " & " : ";\n\n");
+                    transitions->transition->end->name, (transitions->nextTransition != NULL || states->nextState != NULL) ? " &\n\t" : ";\n\n");
             transitions = transitions->nextTransition;
         }
         states = states->nextState;
     }
+    if (printTrans)
+        fprintf(f, "\n");
 }
 
 struct StringList *portsIntersection(struct Transition *transition, struct Automato *automato)
@@ -299,16 +306,16 @@ struct Automato *productInSmv(struct AutomatoList *automatos, FILE *f)
         components = addString(components, automato1->name);
         components = addString(components, automato2->name);
         automatoPorts = unionStringList(automato1->ports, automato2->ports);
+        states = NULL;
         while (states1 != NULL)
         {
             states2 = automato2->states;
             invar = NULL;
-            states = NULL;
             while (states2 != NULL)
             {
                 snprintf(concat, 600, "%s%s", states1->state->name, states2->state->name);
                 states = addString(states, concat);
-                snprintf(transString, 600, "(((prod1.cs = %s) & (prod2.cs = %s)) <-> (cs = %s)", states1->state->name, states2->state->name, concat);
+                snprintf(transString, 600, "(((prod1.cs = %s) & (prod2.cs = %s)) <-> (cs = %s))", states1->state->name, states2->state->name, concat);
                 invar = addString(invar, transString);
                 states2 = states2->nextState;
                 tempState = newState(concat);
@@ -352,7 +359,7 @@ struct Automato *productInSmv(struct AutomatoList *automatos, FILE *f)
                     while (transitions2 != NULL)
                     {
                         intersection2 = portsIntersection(transitions2->transition, automato1);
-                        if (intersection2 == NULL && firstPass)
+                        if (intersection2 == NULL && firstPass && states1->nextState == NULL)
                         {
                             snprintf(concat, 600, "%s%s", states1->state->name, transitions2->transition->end->name);
                             inalcStates = delString(inalcStates, concat);
@@ -401,7 +408,7 @@ struct Automato *productInSmv(struct AutomatoList *automatos, FILE *f)
                     firstPass = 0;
                     transitions1 = transitions1->nextTransition;
                 }
-                if (states1->state->transitions == NULL)
+                if (states1->state->transitions == NULL && states1->nextState == NULL)
                 {
                     transitions2 = states2->state->transitions;
                     while (transitions2 != NULL)
@@ -442,9 +449,11 @@ struct Automato *productInSmv(struct AutomatoList *automatos, FILE *f)
         automatos = automatos->nextAutomato;
         snprintf(concat, 600, "%s%s", components->string, components->nextString->string);
         automato1 = newAutomato(concat);
+        automato1->ports = automatoPorts;
+        automato1->nPorts = listLength(automatoPorts);
         while (tempStates != NULL)
         {
-            addState(tempStates->state, automato1);
+            addStateWithoutPorts(tempStates->state, automato1);
             tempStates = tempStates->nextState;
         }
         tempStates = NULL;
