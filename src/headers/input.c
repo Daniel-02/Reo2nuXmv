@@ -22,7 +22,7 @@ struct Automato *createSync(char *ports, int nAuto)
         i++;
         j++;
     }
-    struct State *state1 = newState("q0");
+    struct State *state1 = newState("q0", 1);
     char *condition = (char *)malloc(600 * sizeof(char));
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
@@ -61,7 +61,7 @@ struct Automato *createLossy(char *ports, int nAuto)
         i++;
         j++;
     }
-    struct State *state1 = newState("q0");
+    struct State *state1 = newState("q0", 1);
     char *condition = (char *)malloc(600 * sizeof(char));
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
@@ -110,9 +110,9 @@ struct Automato *createFifo(char *ports, int nAuto)
         i++;
         j++;
     }
-    struct State *state1 = newState("q0");
-    struct State *state2 = newState("p0");
-    struct State *state3 = newState("p1");
+    struct State *state1 = newState("q0", 1);
+    struct State *state2 = newState("p0", 0);
+    struct State *state3 = newState("p1", 0);
     char *condition = (char *)malloc(600 * sizeof(char));
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
@@ -185,7 +185,7 @@ struct Automato *createSyncDrain(char *ports, int nAuto)
         i++;
         j++;
     }
-    struct State *state1 = newState("q0");
+    struct State *state1 = newState("q0", 1);
     char *condition = (char *)malloc(600 * sizeof(char));
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
@@ -224,7 +224,7 @@ struct Automato *createAsync(char *ports, int nAuto)
         i++;
         j++;
     }
-    struct State *state1 = newState("q0");
+    struct State *state1 = newState("q0", 1);
     char *condition = (char *)malloc(600 * sizeof(char));
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
@@ -283,7 +283,7 @@ struct Automato *createMerger(char *ports, int nAuto)
         i++;
         j++;
     }
-    struct State *state1 = newState("q0");
+    struct State *state1 = newState("q0", 1);
     char *condition = (char *)malloc(600 * sizeof(char));
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);
@@ -344,7 +344,7 @@ struct Automato *createReplicator(char *ports, int nAuto)
         i++;
         j++;
     }
-    struct State *state1 = newState("q0");
+    struct State *state1 = newState("q0", 1);
     char *condition = (char *)malloc(600 * sizeof(char));
     struct StringList *portsList = NULL;
     portsList = addString(portsList, port1);

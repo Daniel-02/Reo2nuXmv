@@ -13,46 +13,58 @@ MODULE sync1(time)
 VAR
 	ports: portsModule;
 	cs: {q0};
+ASSIGN
+	init(cs) := {q0};
 TRANS
-	((cs = q0 & ports.a[time] != NULL & ports.a[time] = ports.b[time])-> next(cs) = q0);
+	((cs = q0 & ports.a[time] != NULL & ports.a[time] = ports.b[time]) -> next(cs) = q0);
 
 MODULE sync2(time)
 VAR
 	ports: portsModule;
 	cs: {q0};
+ASSIGN
+	init(cs) := {q0};
 TRANS
-	((cs = q0 & ports.c[time] != NULL & ports.c[time] = ports.d[time])-> next(cs) = q0);
+	((cs = q0 & ports.c[time] != NULL & ports.c[time] = ports.d[time]) -> next(cs) = q0);
 
 MODULE sync3(time)
 VAR
 	ports: portsModule;
 	cs: {q0};
+ASSIGN
+	init(cs) := {q0};
 TRANS
-	((cs = q0 & ports.l[time] != NULL & ports.l[time] = ports.m[time])-> next(cs) = q0);
+	((cs = q0 & ports.l[time] != NULL & ports.l[time] = ports.m[time]) -> next(cs) = q0);
 
 MODULE sync4(time)
 VAR
 	ports: portsModule;
 	cs: {q0};
+ASSIGN
+	init(cs) := {q0};
 TRANS
-	((cs = q0 & ports.e[time] != NULL & ports.e[time] = ports.f[time])-> next(cs) = q0);
+	((cs = q0 & ports.e[time] != NULL & ports.e[time] = ports.f[time]) -> next(cs) = q0);
 
 MODULE syncDrain5(time)
 VAR
 	ports: portsModule;
 	cs: {q0};
+ASSIGN
+	init(cs) := {q0};
 TRANS
-	((cs = q0 & ports.i[time] != NULL & ports.j[time] != NULL)-> next(cs) = q0);
+	((cs = q0 & ports.i[time] != NULL & ports.j[time] != NULL) -> next(cs) = q0);
 
 MODULE fifo6(time)
 VAR
 	ports: portsModule;
 	cs: {q0,p0,p1};
+ASSIGN
+	init(cs) := {q0};
 TRANS
-	((cs = q0 & ports.h[time] = NULL & ports.g[time] = 0)-> next(cs) = p0) &
-	((cs = q0 & ports.h[time] = NULL & ports.g[time] = 1)-> next(cs) = p1) &
-	((cs = p0 & ports.g[time] = NULL & ports.h[time] = 0)-> next(cs) = q0) &
-	((cs = p1 & ports.g[time] = NULL & ports.h[time] = 1)-> next(cs) = q0);
+	((cs = q0 & ports.h[time] = NULL & ports.g[time] = 0) -> next(cs) = p0) &
+	((cs = q0 & ports.h[time] = NULL & ports.g[time] = 1) -> next(cs) = p1) &
+	((cs = p0 & ports.g[time] = NULL & ports.h[time] = 0) -> next(cs) = q0) &
+	((cs = p1 & ports.g[time] = NULL & ports.h[time] = 1) -> next(cs) = q0);
 
 MODULE sync1sync2(time)
 VAR
@@ -60,6 +72,8 @@ VAR
 	prod2: sync2(time);
 	ports: portsModule;
 	cs: {q0q0};
+ASSIGN
+	init(cs) := {q0q0};
 INVAR
 	(((prod1.cs = q0) & (prod2.cs = q0)) <-> (cs = q0q0));
 
@@ -69,6 +83,8 @@ VAR
 	prod2: sync3(time);
 	ports: portsModule;
 	cs: {q0q0q0};
+ASSIGN
+	init(cs) := {q0q0q0};
 INVAR
 	(((prod1.cs = q0q0) & (prod2.cs = q0)) <-> (cs = q0q0q0));
 
@@ -78,6 +94,8 @@ VAR
 	prod2: sync4(time);
 	ports: portsModule;
 	cs: {q0q0q0q0};
+ASSIGN
+	init(cs) := {q0q0q0q0};
 INVAR
 	(((prod1.cs = q0q0q0) & (prod2.cs = q0)) <-> (cs = q0q0q0q0));
 
@@ -87,6 +105,8 @@ VAR
 	prod2: syncDrain5(time);
 	ports: portsModule;
 	cs: {q0q0q0q0q0};
+ASSIGN
+	init(cs) := {q0q0q0q0q0};
 INVAR
 	(((prod1.cs = q0q0q0q0) & (prod2.cs = q0)) <-> (cs = q0q0q0q0q0));
 
@@ -96,6 +116,8 @@ VAR
 	prod2: fifo6(time);
 	ports: portsModule;
 	cs: {q0q0q0q0q0q0,q0q0q0q0q0p0,q0q0q0q0q0p1};
+ASSIGN
+	init(cs) := {q0q0q0q0q0q0};
 TRANS
 	((cs = q0q0q0q0q0p0) -> ((next(cs) != q0q0q0q0q0p1))) &
 	((cs = q0q0q0q0q0p1) -> ((next(cs) != q0q0q0q0q0p0)));

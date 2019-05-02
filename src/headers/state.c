@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "state.h"
 
-struct State *newState(char name[20])
+struct State *newState(char name[20], int init)
 {
     struct State *state = (struct State *)malloc(sizeof(struct State));
     if (state == NULL)
@@ -11,6 +11,7 @@ struct State *newState(char name[20])
     strcpy(state->name, name);
     state->nTrans = 0;
     state->transitions = NULL;
+    state->init = init;
     return state;
 }
 

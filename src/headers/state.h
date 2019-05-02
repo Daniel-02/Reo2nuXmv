@@ -16,6 +16,7 @@ struct State
     char name[20];
     int nTrans;
     struct TransitionList *transitions;
+    int init;
 };
 
 struct Transition
@@ -65,7 +66,7 @@ struct ConditionList
     struct ConditionList *nextCondition;
 };
 
-struct State *newState(char name[20]);
+struct State *newState(char name[20], int init);
 
 void addTransition(struct Transition *transition);
 
