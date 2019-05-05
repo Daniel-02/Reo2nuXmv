@@ -33,18 +33,21 @@ void caToNuxmv(struct Automato *automato, FILE *f)
     }
     fprintf(f, "};\n");
     states = automato->states;
-    fprintf(f, "ASSIGN\n\tinit(cs) := {");
-    while (states != NULL)
+    if (states->nextState != NULL)
     {
-        if (states->state->init)
+        fprintf(f, "ASSIGN\n\tinit(cs) := {");
+        while (states != NULL)
         {
-            fprintf(f, "%s%s", first ? "," : "", states->state->name);
-            first++;
+            if (states->state->init)
+            {
+                fprintf(f, "%s%s", first ? "," : "", states->state->name);
+                first++;
+            }
+            states = states->nextState;
         }
-        states = states->nextState;
+        fprintf(f, "};\n");
+        states = automato->states;
     }
-    fprintf(f, "};\n");
-    states = automato->states;
     struct TransitionList *transitions;
     struct ConditionList *conditions;
     char operation[2];
@@ -198,6 +201,7 @@ int equalPorts(struct Transition *transition1, struct Transition *transition2)
 void printToNuXmv(struct StringList *trans, struct StringList *states, struct StringList *invar,
                   struct StringList *components, struct StringList *initStates, char *automatoName, FILE *f)
 {
+    int initState = states->nextString != NULL ? 1 : 0;
     fprintf(f, "MODULE %s(time)\nVAR\n", automatoName);
     fprintf(f, "\tprod1: %s(time);\n\tprod2: %s(time);\n\tports: portsModule;\n",
             components->string, components->nextString->string);
@@ -208,11 +212,14 @@ void printToNuXmv(struct StringList *trans, struct StringList *states, struct St
         states = states->nextString;
     }
     fprintf(f, "};\n");
-    fprintf(f, "ASSIGN\n\tinit(cs) := {");
-    while (initStates != NULL)
+    if (initState)
     {
-        fprintf(f, "%s%s", initStates->string, initStates->nextString != NULL ? "," : "};\n");
-        initStates = initStates->nextString;
+        fprintf(f, "ASSIGN\n\tinit(cs) := {");
+        while (initStates != NULL)
+        {
+            fprintf(f, "%s%s", initStates->string, initStates->nextString != NULL ? "," : "};\n");
+            initStates = initStates->nextString;
+        }
     }
     if (trans != NULL)
     {
