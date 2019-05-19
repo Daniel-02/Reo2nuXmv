@@ -3,22 +3,21 @@
 #include <string.h>
 #include "state.h"
 
-void nullPorts(struct Automato *automato, struct Transition *transition, FILE *f)
+void nullPorts(struct StringList *ports, struct Transition *transition, FILE *f)
 {
     int exists = 0;
-    struct StringList *portsAutomato = automato->ports;
     struct StringList *portsTrans = transition->ports;
-    while (portsAutomato != NULL)
+    while (ports != NULL)
     {
-        if (!existString(portsTrans, portsAutomato->string))
+        if (!existString(portsTrans, ports->string))
         {
-            fprintf(f, "ports.%s[time] = NULL & ", portsAutomato->string);
+            fprintf(f, "ports.%s[time] = NULL & ", ports->string);
         }
-        portsAutomato = portsAutomato->nextString;
+        ports = ports->nextString;
     }
 }
 
-void caToNuxmv(struct Automato *automato, FILE *f)
+void caToNuxmv(struct Automato *automato, struct StringList *ports, FILE *f)
 {
     int nStates = automato->nStates;
     struct StateList *states = automato->states;
@@ -64,7 +63,7 @@ void caToNuxmv(struct Automato *automato, FILE *f)
                 printTrans = 0;
             }
             fprintf(f, "((cs = %s & ", transitions->transition->start->name);
-            nullPorts(automato, transitions->transition, f);
+            nullPorts(ports, transitions->transition, f);
             fprintf(f, "%s) -> next(cs) = %s)%s", transitions->transition->condition,
                     transitions->transition->end->name, (transitions->nextTransition != NULL || states->nextState != NULL) ? " &\n\t" : ";\n\n");
             transitions = transitions->nextTransition;
@@ -278,7 +277,7 @@ void printaAutomatoFinal(struct Automato *automato)
 
     fprintf(f, "MODULE main\nVAR\n\ttime: 0..3;\n\tautomato: %s(time);\n", automato->name);
     fprintf(f, "ASSIGN\n\tinit(time) := 0;\n\tnext(time) := case\n\t\ttime < 3: time + 1;\n\t\tTRUE: time;\nesac;\n\n");
-    caToNuxmv(automato, f);
+    caToNuxmv(automato, automato->ports, f);
     portsToNuXmv(f, automato);
 
     fclose(f);
@@ -300,7 +299,7 @@ char *nullPortsToString(struct StringList *portsAutomato, struct StringList *por
     return nullPortsString;
 }
 
-struct Automato *productInSmv(struct AutomatoList *automatos, FILE *f)
+struct Automato *productInSmv(struct AutomatoList *automatos, struct StringList *ports, FILE *f)
 {
     struct Automato *automato1 = automatos->automato;
     struct Automato *automato2;
@@ -341,10 +340,10 @@ struct Automato *productInSmv(struct AutomatoList *automatos, FILE *f)
         automatoPorts = unionStringList(automato1->ports, automato2->ports);
         states = NULL;
         initStates = NULL;
+        invar = NULL;
         while (states1 != NULL)
         {
             states2 = automato2->states;
-            invar = NULL;
             while (states2 != NULL)
             {
                 init = ((states1->state->init + states2->state->init) == 2 ? 1 : 0);
@@ -415,14 +414,14 @@ struct Automato *productInSmv(struct AutomatoList *automatos, FILE *f)
                             inalcStates = delString(inalcStates, concat);
                             tempNPorts = transitions1->transition->nPorts;
                             tempPorts = transitions1->transition->ports;
-                            if (!equalPorts(transitions1->transition, transitions2->transition) && intersection1 != NULL)
+                            if (!equalPorts(transitions1->transition, transitions2->transition))
                             {
                                 strcpy(portString, "");
                                 strcpy(transString, "");
                                 tempPorts = unionStringList(transitions1->transition->ports, transitions2->transition->ports);
                                 snprintf(transString, 600, "((cs = %s%s) & (%s & %s)", states1->state->name, states2->state->name,
                                          transitions1->transition->condition, transitions2->transition->condition);
-                                portString = nullPortsToString(automatoPorts, tempPorts);
+                                portString = nullPortsToString(ports, tempPorts);
                                 strcat(transString, portString);
                                 snprintf(portString, 600, " -> next(cs) = %s%s)", transitions1->transition->end->name, transitions2->transition->end->name);
                                 strcat(transString, portString);
@@ -510,23 +509,30 @@ void startNuxmv(struct AutomatoList *automatos)
 {
     struct AutomatoList *automatoList = automatos;
     struct Automato *finalAutomato;
+    struct StringList *ports;
     FILE *f = fopen("nuxmv.smv", "w");
     if (f == NULL)
     {
         printf("Error opening file!\n");
         exit(1);
     }
-
+    while (automatoList != NULL)
+    {
+        ports = unionStringList(ports, automatoList->automato->ports);
+        automatoList = automatoList->nextAutomato;
+    }
+    automatoList = automatos;
     fprintf(f, "MODULE main\nVAR\n\ttime: 0..3;\n\t%s: %s(time);\n", "automatoFinal", "automatoFinal");
     fprintf(f, "ASSIGN\n\tinit(time) := 0;\n\tnext(time) := case\n\t\ttime < 3: time + 1;\n\t\tTRUE: time;\nesac;\n\n");
     while (automatoList != NULL)
     {
-        caToNuxmv(automatoList->automato, f);
+        caToNuxmv(automatoList->automato, ports, f);
         automatoList = automatoList->nextAutomato;
     }
-    finalAutomato = productInSmv(automatos, f);
+    finalAutomato = productInSmv(automatos, ports, f);
     printaAutomatoFinal(finalAutomato);
     portsToNuXmv(f, finalAutomato);
+    delStringList(ports);
 
     fclose(f);
 }

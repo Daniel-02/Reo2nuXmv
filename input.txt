@@ -1,6 +1,2 @@
-sync(a,b)
-sync(c,d)
-sync(l,m)
-sync(e,f)
-syncDrain(i,j)
-fifo(g,h)
+fifo(a,e)
+sync(e,b)
