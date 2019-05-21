@@ -1,7 +1,7 @@
 MODULE main
 VAR
 	time: 0..3;
-	automato: automatoFinal(time);
+	automato: finalAutomata(time);
 ASSIGN
 	init(time) := 0;
 	next(time) := case
@@ -9,7 +9,7 @@ ASSIGN
 		TRUE: time;
 esac;
 
-MODULE automatoFinal(time)
+MODULE finalAutomata(time)
 VAR
 	ports: portsModule;
 	cs: {q0q0,p0q0,p1q0};

@@ -1,7 +1,7 @@
 MODULE main
 VAR
 	time: 0..3;
-	automatoFinal: automatoFinal(time);
+	finalAutomata: finalAutomata(time);
 ASSIGN
 	init(time) := 0;
 	next(time) := case
@@ -18,17 +18,17 @@ ASSIGN
 TRANS
 	((cs = q0 & ports.e[time] = NULL & ports.b[time] = NULL & ports.a[time] = 0) -> next(cs) = p0) &
 	((cs = q0 & ports.e[time] = NULL & ports.b[time] = NULL & ports.a[time] = 1) -> next(cs) = p1) &
-	((cs = p0 & ports.a[time] = NULL & ports.b[time] = NULL & ports.e[time] = 0) -> next(cs) = q0) &
-	((cs = p1 & ports.a[time] = NULL & ports.b[time] = NULL & ports.e[time] = 1) -> next(cs) = q0);
+	((cs = p0 & ports.a[time] = NULL & ports.b[time] = NULL & ports.e[time] = 0 & FALSE) -> next(cs) = q0) &
+	((cs = p1 & ports.a[time] = NULL & ports.b[time] = NULL & ports.e[time] = 1 & FALSE) -> next(cs) = q0);
 
 MODULE sync2(time)
 VAR
 	ports: portsModule;
 	cs: {q0};
 TRANS
-	((cs = q0 & ports.a[time] = NULL & ports.e[time] != NULL & ports.e[time] = ports.b[time]) -> next(cs) = q0);
+	((cs = q0 & ports.a[time] = NULL & ports.e[time] != NULL & ports.e[time] = ports.b[time] & FALSE) -> next(cs) = q0);
 
-MODULE automatoFinal(time)
+MODULE finalAutomata(time)
 VAR
 	prod1: fifo1(time);
 	prod2: sync2(time);
@@ -37,10 +37,10 @@ VAR
 ASSIGN
 	init(cs) := {q0q0};
 TRANS
-	((cs = p0q0) & (ports.e[time] = 0 & ports.e[time] != NULL & ports.e[time] = ports.b[time]) & ports.a[time] = NULL -> next(cs) = q0q0)) &
-	((cs = p0q0) -> ((next(cs) != p1q0))) &
-	((cs = p1q0) & (ports.e[time] = 1 & ports.e[time] != NULL & ports.e[time] = ports.b[time]) & ports.a[time] = NULL -> next(cs) = q0q0)) &
-	((cs = p1q0) -> ((next(cs) != p0q0)));
+	((cs = p0q0 & ports.a[time] = NULL & ports.e[time] = 0 & ports.e[time] != NULL & ports.e[time] = ports.b[time]) -> next(cs) = q0q0) &
+	((cs = p1q0 & ports.a[time] = NULL & ports.e[time] = 1 & ports.e[time] != NULL & ports.e[time] = ports.b[time]) -> next(cs) = q0q0) &
+	((cs = p0q0) -> ((next(cs) != p1q0)) &
+	((cs = p1q0) -> ((next(cs) != p0q0));
 INVAR
 	(((prod1.cs = q0) & (prod2.cs = q0)) <-> (cs = q0q0)) &
 	(((prod1.cs = p0) & (prod2.cs = q0)) <-> (cs = p0q0)) &

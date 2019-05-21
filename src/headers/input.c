@@ -34,6 +34,7 @@ struct Automato *createSync(char *ports, int nAuto)
     transition->nPorts = 2;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     char *automatoName = (char *)malloc(600 * sizeof(char));
     snprintf(automatoName, 600, "sync%d", nAuto);
@@ -73,6 +74,7 @@ struct Automato *createLossy(char *ports, int nAuto)
     transition->nPorts = 2;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     condition = (char *)malloc(600 * sizeof(char));
     portsList = NULL;
@@ -83,6 +85,7 @@ struct Automato *createLossy(char *ports, int nAuto)
     transition->end = state1;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     char *automatoName = (char *)malloc(600 * sizeof(char));
     snprintf(automatoName, 600, "lossySync%d", nAuto);
@@ -123,6 +126,7 @@ struct Automato *createFifo(char *ports, int nAuto)
     transition->nPorts = 1;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     condition = (char *)malloc(600 * sizeof(char));
     portsList = NULL;
@@ -134,6 +138,7 @@ struct Automato *createFifo(char *ports, int nAuto)
     transition->nPorts = 1;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     condition = (char *)malloc(600 * sizeof(char));
     portsList = NULL;
@@ -145,6 +150,7 @@ struct Automato *createFifo(char *ports, int nAuto)
     transition->nPorts = 1;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     condition = (char *)malloc(600 * sizeof(char));
     portsList = NULL;
@@ -156,6 +162,7 @@ struct Automato *createFifo(char *ports, int nAuto)
     transition->nPorts = 1;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     char *automatoName = (char *)malloc(600 * sizeof(char));
     snprintf(automatoName, 600, "fifo%d", nAuto);
@@ -197,6 +204,7 @@ struct Automato *createSyncDrain(char *ports, int nAuto)
     transition->nPorts = 1;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     char *automatoName = (char *)malloc(600 * sizeof(char));
     snprintf(automatoName, 600, "syncDrain%d", nAuto);
@@ -235,6 +243,7 @@ struct Automato *createAsync(char *ports, int nAuto)
     transition->nPorts = 1;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     condition = (char *)malloc(600 * sizeof(char));
     portsList = NULL;
@@ -246,6 +255,7 @@ struct Automato *createAsync(char *ports, int nAuto)
     transition->nPorts = 1;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     char *automatoName = (char *)malloc(600 * sizeof(char));
     snprintf(automatoName, 600, "asyncDrain%d", nAuto);
@@ -295,6 +305,7 @@ struct Automato *createMerger(char *ports, int nAuto)
     transition->nPorts = 2;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     condition = (char *)malloc(600 * sizeof(char));
     portsList = NULL;
@@ -307,6 +318,7 @@ struct Automato *createMerger(char *ports, int nAuto)
     transition->nPorts = 2;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     char *automatoName = (char *)malloc(600 * sizeof(char));
     snprintf(automatoName, 600, "merger%d", nAuto);
@@ -357,6 +369,7 @@ struct Automato *createReplicator(char *ports, int nAuto)
     transition->nPorts = 3;
     transition->ports = portsList;
     transition->condition = condition;
+    transition->blocked = 0;
     addTransition(transition);
     char *automatoName = (char *)malloc(600 * sizeof(char));
     snprintf(automatoName, 600, "replicator%d", nAuto);

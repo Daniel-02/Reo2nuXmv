@@ -15,26 +15,6 @@ struct State *newState(char name[20], int init)
     return state;
 }
 
-// struct Transition newTransition(struct State *start, struct State *end, int nPorts, struct Condition *conditions)
-// {
-//     struct Transition transition;
-//     transition.start = start;
-//     transition.end = end;
-//     transition.nPorts = nPorts;
-//     // memcpy(&transition.ports, &ports, sizeof(ports));
-//     transition.conditions = conditions;
-//     return transition;
-// }
-
-// struct Condition newCondition(char port[20], char operation, char value[20])
-// {
-//     struct Condition condition;
-//     strcpy(condition.port, port);
-//     condition.operation = operation;
-//     strcpy(condition.value, value);
-//     return condition;
-// }
-
 void addTransition(struct Transition *transition)
 {
     struct State *stateStart = transition->start;
@@ -65,7 +45,6 @@ void delConditionList(struct ConditionList *conditions)
 
 void delTransition(struct Transition *transition)
 {
-    // delConditionList(transition->conditions);
     delStringList(transition->ports);
     free(transition->condition);
     free(transition);
@@ -109,6 +88,19 @@ struct Automato *newAutomato(char name[20])
     strcpy(automato->name, name);
     automato->nStates = 0;
     automato->states = NULL;
+    return automato;
+}
+
+struct AutomatoProd *newAutomatoProd()
+{
+    struct AutomatoProd *automato = (struct AutomatoProd *)malloc(sizeof(struct AutomatoProd));
+    if (automato == NULL)
+        return NULL;
+    automato->automato = NULL;
+    automato->prod1 = NULL;
+    automato->prod2 = NULL;
+    automato->invar = NULL;
+    automato->inalcStates = NULL;
     return automato;
 }
 
@@ -173,17 +165,6 @@ struct StateList *addStateToList(struct StateList *states, struct State *state)
     return states;
 }
 
-// void delStates(struct Automato *automato)
-// {
-//     if (automato != NULL)
-//     {
-//         while ()
-//         {
-//             delState(automato->states[i]);
-//         }
-//     }
-// }
-
 void delStatesList(struct StateList *states)
 {
     if (states == NULL)
@@ -202,6 +183,18 @@ void delAutomato(struct Automato *automato)
             delStatesList(automato->states);
         }
         free(automato->ports);
+        free(automato);
+    }
+}
+
+void delAutomatoProd(struct AutomatoProd *automato)
+{
+    if (automato != NULL)
+    {
+        free(automato->prod1);
+        free(automato->prod2);
+        delStringList(automato->invar);
+        delStringList(automato->inalcStates);
         free(automato);
     }
 }
@@ -293,6 +286,24 @@ struct AutomatoList *addAutomato(struct AutomatoList *automatoList, struct Autom
     return automatoList;
 }
 
+struct AutomatoProdList *addAutomatoProd(struct AutomatoProdList *automatoList, struct AutomatoProd *automato)
+{
+    if (automatoList == NULL)
+    {
+        automatoList = (struct AutomatoProdList *)malloc(sizeof(struct AutomatoProdList));
+        automatoList->automato = automato;
+        automatoList->nextAutomato = NULL;
+        return automatoList;
+    }
+    struct AutomatoProdList *tempAutomato = automatoList;
+    while (tempAutomato->nextAutomato != NULL)
+        tempAutomato = tempAutomato->nextAutomato;
+    tempAutomato->nextAutomato = (struct AutomatoProdList *)malloc(sizeof(struct AutomatoProdList));
+    tempAutomato->nextAutomato->automato = automato;
+    tempAutomato->nextAutomato->nextAutomato = NULL;
+    return automatoList;
+}
+
 struct ConditionList *addConditionToList(struct ConditionList *conditionList, struct Condition *condition)
 {
     if (conditionList == NULL)
@@ -317,6 +328,15 @@ void delAutomatoList(struct AutomatoList *automatos)
         return;
     delAutomatoList(automatos->nextAutomato);
     delAutomato(automatos->automato);
+    free(automatos);
+}
+
+void delAutomatoProdList(struct AutomatoProdList *automatos)
+{
+    if (!automatos)
+        return;
+    delAutomatoProdList(automatos->nextAutomato);
+    delAutomatoProd(automatos->automato);
     free(automatos);
 }
 

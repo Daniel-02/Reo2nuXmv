@@ -7,8 +7,16 @@ struct Automato
     int nStates;
     struct StateList *states;
     int nPorts;
-    // char (*ports)[20];
     struct StringList *ports;
+};
+
+struct AutomatoProd
+{
+    struct Automato *automato;
+    char *prod1;
+    char *prod2;
+    struct StringList *invar;
+    struct StringList *inalcStates;
 };
 
 struct State
@@ -24,9 +32,9 @@ struct Transition
     struct State *start;
     struct State *end;
     int nPorts;
-    // struct ConditionList *conditions;
     struct StringList *ports;
     char *condition;
+    int blocked;
 };
 
 struct Condition
@@ -58,6 +66,12 @@ struct AutomatoList
 {
     struct Automato *automato;
     struct AutomatoList *nextAutomato;
+};
+
+struct AutomatoProdList
+{
+    struct AutomatoProd *automato;
+    struct AutomatoProdList *nextAutomato;
 };
 
 struct ConditionList
@@ -113,5 +127,13 @@ void printAutomato(struct Automato *automato);
 void printsList(struct StringList *list);
 
 void addStateWithoutPorts(struct State *state, struct Automato *automato);
+
+struct AutomatoProd *newAutomatoProd();
+
+void delAutomatoProdList(struct AutomatoProdList *automatos);
+
+void delAutomatoProd(struct AutomatoProd *automato);
+
+struct AutomatoProdList *addAutomatoProd(struct AutomatoProdList *automatoList, struct AutomatoProd *automato);
 
 #endif
