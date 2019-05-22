@@ -393,7 +393,9 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
                         tempTransition->condition = transitions1->transition->condition;
                         tempTransition->blocked = 2;
                         addTransition(tempTransition);
-                    } else {
+                    }
+                    else
+                    {
                         transitions1->transition->blocked = 1;
                     }
                     transitions2 = states2->state->transitions;
@@ -401,22 +403,24 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
                     {
                         intersection2 = portsIntersection(transitions2->transition, automato1);
                         if (firstPass && states1->nextState == NULL)
-                        if (intersection2 == NULL)
-                        {
-                            snprintf(concat, 600, "%s%s", states1->state->name, transitions2->transition->end->name);
-                            inalcStates = delString(inalcStates, concat);
-                            tempState = findState(tempStates, concat);
-                            tempTransition = (struct Transition *)malloc(sizeof(struct Transition));
-                            tempTransition->start = stateStart;
-                            tempTransition->end = tempState;
-                            tempTransition->nPorts = transitions2->transition->nPorts;
-                            tempTransition->ports = transitions2->transition->ports;
-                            tempTransition->condition = transitions2->transition->condition;
-                            tempTransition->blocked = 2;
-                            addTransition(tempTransition);
-                        } else {
-                            transitions2->transition->blocked = 1;
-                        }
+                            if (intersection2 == NULL)
+                            {
+                                snprintf(concat, 600, "%s%s", states1->state->name, transitions2->transition->end->name);
+                                inalcStates = delString(inalcStates, concat);
+                                tempState = findState(tempStates, concat);
+                                tempTransition = (struct Transition *)malloc(sizeof(struct Transition));
+                                tempTransition->start = stateStart;
+                                tempTransition->end = tempState;
+                                tempTransition->nPorts = transitions2->transition->nPorts;
+                                tempTransition->ports = transitions2->transition->ports;
+                                tempTransition->condition = transitions2->transition->condition;
+                                tempTransition->blocked = 2;
+                                addTransition(tempTransition);
+                            }
+                            else
+                            {
+                                transitions2->transition->blocked = 1;
+                            }
                         if (equalIntersections(intersection1, intersection2))
                         {
                             snprintf(concat, 600, "%s%s", transitions1->transition->end->name, transitions2->transition->end->name);
@@ -479,7 +483,9 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
                             tempTransition->condition = transitions2->transition->condition;
                             tempTransition->blocked = 2;
                             addTransition(tempTransition);
-                        } else {
+                        }
+                        else
+                        {
                             transitions2->transition->blocked = 1;
                         }
                         transitions2 = transitions2->nextTransition;
@@ -525,7 +531,8 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
     }
     return prods;
 }
-void prodToNuxmv(struct AutomatoProd *prod, struct StringList *ports, FILE *f){
+void prodToNuxmv(struct AutomatoProd *prod, struct StringList *ports, FILE *f)
+{
     struct Automato *automato = prod->automato;
     struct StateList *states = automato->states;
     struct StringList *inalcStates = prod->inalcStates;
@@ -568,7 +575,8 @@ void prodToNuxmv(struct AutomatoProd *prod, struct StringList *ports, FILE *f){
                 fprintf(f, "TRANS\n\t");
                 printTrans = 0;
             }
-            if (transitions->transition->blocked != 2){
+            if (transitions->transition->blocked != 2)
+            {
                 fprintf(f, "((cs = %s & ", transitions->transition->start->name);
                 nullPorts(ports, transitions->transition, f);
                 fprintf(f, "%s%s) -> next(cs) = %s)%s", transitions->transition->condition, transitions->transition->blocked == 1 ? " & FALSE" : "",
@@ -578,13 +586,15 @@ void prodToNuxmv(struct AutomatoProd *prod, struct StringList *ports, FILE *f){
         }
         states = states->nextState;
     }
-    while(inalcStates != NULL){
+    while (inalcStates != NULL)
+    {
         fprintf(f, "%s%s", inalcStates->string, inalcStates->nextString != NULL ? " &\n\t" : ";\n");
         inalcStates = inalcStates->nextString;
     }
-    if(invar != NULL)
+    if (invar != NULL)
         fprintf(f, "INVAR\n\t");
-    while(invar != NULL){
+    while (invar != NULL)
+    {
         fprintf(f, "%s%s", invar->string, invar->nextString != NULL ? " &\n\t" : ";\n\n");
         invar = invar->nextString;
     }
@@ -618,9 +628,11 @@ void startNuxmv(struct AutomatoList *automatos)
         caToNuxmv(automatoList->automato, ports, f);
         automatoList = automatoList->nextAutomato;
     }
-    while (prodsTemp != NULL){
+    while (prodsTemp != NULL)
+    {
         prodToNuxmv(prodsTemp->automato, ports, f);
-        if (prodsTemp->nextAutomato == NULL){
+        if (prodsTemp->nextAutomato == NULL)
+        {
             printaAutomatoFinal(prodsTemp->automato->automato);
             portsToNuXmv(f, prodsTemp->automato->automato);
         }
