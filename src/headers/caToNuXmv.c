@@ -22,12 +22,15 @@ void caToNuxmv(struct Automato *automato, struct StringList *ports, FILE *f)
     int nStates = automato->nStates;
     struct StateList *states = automato->states;
     int first = 0;
+    struct StringList *statesNames = NULL;
+    struct StringList *tempStatesNames = NULL;
     fprintf(f, "MODULE %s(time)\nVAR\n\tports: ", automato->name);
     fprintf(f, "portsModule;\n");
     fprintf(f, "\tcs: {");
     while (states != NULL)
     {
         fprintf(f, "%s%s", states->state->name, states->nextState != NULL ? "," : "");
+        statesNames = addString(statesNames, states->state->name);
         states = states->nextState;
     }
     fprintf(f, "};\n");
@@ -55,6 +58,8 @@ void caToNuxmv(struct Automato *automato, struct StringList *ports, FILE *f)
     while (states != NULL)
     {
         transitions = states->state->transitions;
+        tempStatesNames = cpyStringList(tempStatesNames, statesNames);
+        tempStatesNames = delString(tempStatesNames, states->state->name);
         while (transitions != NULL)
         {
             if (printTrans)
@@ -65,9 +70,25 @@ void caToNuxmv(struct Automato *automato, struct StringList *ports, FILE *f)
             fprintf(f, "((cs = %s & ", transitions->transition->start->name);
             nullPorts(ports, transitions->transition, f);
             fprintf(f, "%s%s) -> next(cs) = %s)%s", transitions->transition->condition, transitions->transition->blocked == 1 ? " & FALSE" : "",
-                    transitions->transition->end->name, (transitions->nextTransition != NULL || states->nextState != NULL) ? " &\n\t" : ";\n\n");
+                    transitions->transition->end->name, transitions->nextTransition != NULL ? " &\n\t" : "");
+            tempStatesNames = delString(tempStatesNames, transitions->transition->end->name);
             transitions = transitions->nextTransition;
         }
+        if (tempStatesNames)
+        {
+            if (printTrans)
+            {
+                fprintf(f, "TRANS\n\t");
+                printTrans = 0;
+            }
+            fprintf(f, " &\n\t((cs = %s) -> (", states->state->name);
+        }
+        while (tempStatesNames != NULL)
+        {
+            fprintf(f, "(next(cs) != %s)%s", tempStatesNames->string, tempStatesNames->nextString != NULL ? " & " : "))");
+            tempStatesNames = tempStatesNames->nextString;
+        }
+        fprintf(f, "%s", states->nextState != NULL ? " &\n\t" : ";\n\n");
         states = states->nextState;
     }
     if (printTrans)
@@ -496,7 +517,7 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
                     snprintf(transString, 600, "((cs = %s%s) -> (", states1->state->name, states2->state->name);
                     while (inalcStates != NULL)
                     {
-                        snprintf(concat, 600, "(next(cs) != %s)%s", inalcStates->string, inalcStates->nextString != NULL ? " & " : ")");
+                        snprintf(concat, 600, "(next(cs) != %s)%s", inalcStates->string, inalcStates->nextString != NULL ? " & " : "))");
                         strcat(transString, concat);
                         inalcStates = inalcStates->nextString;
                     }
@@ -510,7 +531,6 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
             strcpy(concat, "finalAutomata\0");
         else
             snprintf(concat, 600, "%s%s", components->string, components->nextString->string);
-        // printToNuXmv(trans, states, invar, components, initStates, concat, f);
         automato1 = newAutomato(concat);
         automato1->ports = automatoPorts;
         automato1->nPorts = listLength(automatoPorts);
