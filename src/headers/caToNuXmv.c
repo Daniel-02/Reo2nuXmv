@@ -257,33 +257,94 @@ void printToNuXmv(struct StringList *trans, struct StringList *states, struct St
         invar = invar->nextString;
     }
 }
-
-void portsToNuXmv(FILE *f, struct Automato *automato)
+void randomPort(FILE *f, char *port, int timeMax)
 {
-    struct StringList *ports = automato->ports;
-    int timeMax = 3;
     int valueCase;
-    fprintf(f, "MODULE portsModule\nFROZENVAR\n");
-    while (ports != NULL)
+    for (size_t i = 0; i < timeMax; i++)
     {
-        fprintf(f, "\t%s : array 0..%d of {NULL, 0, 1};\n", ports->string, timeMax);
-        ports = ports->nextString;
+        valueCase = random() % 3;
+        if (valueCase == 0)
+            fprintf(f, "\tinit(%s[%ld]) := 0;\n", port, i);
+        else if (valueCase == 1)
+            fprintf(f, "\tinit(%s[%ld]) := 1;\n", port, i);
+        else
+            fprintf(f, "\tinit(%s[%ld]) := NULL;\n", port, i);
+    }
+}
+
+void portsToNuXmv(FILE *f, struct StringList *ports)
+{
+    FILE *pFile = fopen("ports.txt", "r");
+    int timeMax = 0;
+    struct StringList *portValues = NULL;
+    struct StringList *portsFile = NULL;
+    if (pFile != NULL)
+    {
+        int i, j, length;
+        char line[128];
+        char value[128];
+        char port[128];
+        char *temp = (char *)malloc(600 * sizeof(char));
+        fgets(line, sizeof line, pFile);
+        if (strcmp(line, "list\n") == 0)
+        {
+            while (fgets(line, sizeof line, pFile) != NULL)
+            {
+                i = 0;
+                while (line[i] != ',')
+                {
+                    port[i] = line[i];
+                    i++;
+                }
+                port[i] = '\0';
+                portsFile = addString(portsFile, port);
+                length = 0;
+                while ((line[i] != '\n') && (line[i] != '\0'))
+                {
+                    i++;
+                    j = 0;
+                    while (line[i] != ',' && line[i] != '\n' && line[i] != '\0')
+                    {
+                        value[j] = line[i];
+                        i++;
+                        j++;
+                    }
+                    value[j] = '\0';
+                    snprintf(temp, 600, "\tinit(%s[%d]) := %s;\n", port, length, value);
+                    portValues = addString(portValues, temp);
+                    length++;
+                }
+                if (length > timeMax)
+                    timeMax = length;
+            }
+        }
+    }
+    struct StringList *tempPorts = ports;
+    int valueCase;
+    if (timeMax == 0)
+        timeMax = 5;
+    fprintf(f, "MODULE portsModule\nFROZENVAR\n");
+    while (tempPorts != NULL)
+    {
+        fprintf(f, "\t%s : array 0..%d of {NULL, 0, 1};\n", tempPorts->string, timeMax);
+        tempPorts = tempPorts->nextString;
     }
     fprintf(f, "ASSIGN\n");
-    ports = automato->ports;
-    while (ports != NULL)
+    while (portValues != NULL)
     {
-        for (size_t i = 0; i < timeMax; i++)
-        {
-            valueCase = random() % 3;
-            if (valueCase == 0)
-                fprintf(f, "\tinit(%s[%ld]) := 0;\n", ports->string, i);
-            else if (valueCase == 1)
-                fprintf(f, "\tinit(%s[%ld]) := 1;\n", ports->string, i);
-            else
-                fprintf(f, "\tinit(%s[%ld]) := NULL;\n", ports->string, i);
-        }
-        ports = ports->nextString;
+        fprintf(f, "%s", portValues->string);
+        portValues = portValues->nextString;
+    }
+    tempPorts = cpyStringList(tempPorts, ports);
+    while (portsFile != NULL)
+    {
+        tempPorts = delString(tempPorts, portsFile->string);
+        portsFile = portsFile->nextString;
+    }
+    while (tempPorts != NULL)
+    {
+        randomPort(f, tempPorts->string, timeMax);
+        tempPorts = tempPorts->nextString;
     }
 }
 
@@ -299,7 +360,7 @@ void printaAutomatoFinal(struct Automato *automato)
     fprintf(f, "MODULE main\nVAR\n\ttime: 0..3;\n\tautomato: %s(time);\n", automato->name);
     fprintf(f, "ASSIGN\n\tinit(time) := 0;\n\tnext(time) := case\n\t\ttime < 3: time + 1;\n\t\tTRUE: time;\nesac;\n\n");
     caToNuxmv(automato, automato->ports, f);
-    portsToNuXmv(f, automato);
+    portsToNuXmv(f, automato->ports);
 
     fclose(f);
 }
@@ -452,16 +513,7 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
                             tempTransition->blocked = 2;
                             if (!equalPorts(transitions1->transition, transitions2->transition))
                             {
-                                // strcpy(portString, "");
-                                // strcpy(transString, "");
                                 tempPorts = unionStringList(transitions1->transition->ports, transitions2->transition->ports);
-                                // snprintf(transString, 600, "((cs = %s%s) & (%s & %s)", states1->state->name, states2->state->name,
-                                //          transitions1->transition->condition, transitions2->transition->condition);
-                                // portString = nullPortsToString(ports, tempPorts);
-                                // strcat(transString, portString);
-                                // snprintf(portString, 600, " -> next(cs) = %s%s)", transitions1->transition->end->name, transitions2->transition->end->name);
-                                // strcat(transString, portString);
-                                // trans = addString(trans, transString);
                                 tempNPorts = listLength(tempPorts);
                                 tempTransition->blocked = 0;
                             }
@@ -648,18 +700,17 @@ void startNuxmv(struct AutomatoList *automatos)
         caToNuxmv(automatoList->automato, ports, f);
         automatoList = automatoList->nextAutomato;
     }
+    if (prodsTemp == NULL)
+        printaAutomatoFinal(automatos->automato);
     while (prodsTemp != NULL)
     {
         prodToNuxmv(prodsTemp->automato, ports, f);
         if (prodsTemp->nextAutomato == NULL)
-        {
             printaAutomatoFinal(prodsTemp->automato->automato);
-            portsToNuXmv(f, prodsTemp->automato->automato);
-        }
         prodsTemp = prodsTemp->nextAutomato;
     }
+    portsToNuXmv(f, ports);
     delStringList(ports);
     delAutomatoProdList(prods);
-
     fclose(f);
 }

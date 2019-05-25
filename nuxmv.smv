@@ -50,16 +50,22 @@ INVAR
 
 MODULE portsModule
 FROZENVAR
-	a : array 0..3 of {NULL, 0, 1};
-	e : array 0..3 of {NULL, 0, 1};
-	b : array 0..3 of {NULL, 0, 1};
+	a : array 0..5 of {NULL, 0, 1};
+	e : array 0..5 of {NULL, 0, 1};
+	b : array 0..5 of {NULL, 0, 1};
 ASSIGN
 	init(a[0]) := 1;
-	init(a[1]) := NULL;
+	init(a[1]) := 0;
 	init(a[2]) := 1;
-	init(e[0]) := NULL;
+	init(a[3]) := 0;
+	init(a[4]) := NULL;
+	init(b[0]) := NULL;
+	init(b[1]) := 0;
+	init(b[2]) := NULL;
+	init(b[3]) := 0;
+	init(b[4]) := 1;
+	init(e[0]) := 0;
 	init(e[1]) := 1;
 	init(e[2]) := NULL;
-	init(b[0]) := 1;
-	init(b[1]) := 0;
-	init(b[2]) := 0;
+	init(e[3]) := 0;
+	init(e[4]) := 1;
