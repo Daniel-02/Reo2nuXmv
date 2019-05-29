@@ -386,9 +386,8 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
     struct Automato *automato1 = automatos->automato;
     struct Automato *automato2;
     char *concat = (char *)malloc(600 * sizeof(char));
-    char *tempCondition = (char *)malloc(600 * sizeof(char));
-    char *transString = (char *)malloc(600 * sizeof(char));
-    char *portString = (char *)malloc(6000 * sizeof(char));
+    char *tempCondition = NULL;
+    char *transString = (char *)malloc(1200 * sizeof(char));
     struct StringList *intersection1 = NULL;
     struct StringList *intersection2 = NULL;
     struct StateList *states1;
@@ -422,6 +421,10 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
         components = addString(components, automato1->name);
         components = addString(components, automato2->name);
         automatoPorts = unionStringList(automato1->ports, automato2->ports);
+        delStringList(states);
+        delStringList(initStates);
+        delStringList(invar);
+        delStringList(trans);
         states = NULL;
         initStates = NULL;
         invar = NULL;
@@ -507,21 +510,21 @@ struct AutomatoProdList *productInSmv(struct AutomatoList *automatos, struct Str
                         {
                             snprintf(concat, 600, "%s%s", transitions1->transition->end->name, transitions2->transition->end->name);
                             inalcStates = delString(inalcStates, concat);
-                            tempNPorts = transitions1->transition->nPorts;
-                            tempPorts = transitions1->transition->ports;
+                            // tempNPorts = transitions1->transition->nPorts;
+                            // tempPorts = transitions1->transition->ports;
                             tempTransition = (struct Transition *)malloc(sizeof(struct Transition));
-                            tempTransition->blocked = 2;
-                            if (!equalPorts(transitions1->transition, transitions2->transition))
-                            {
-                                tempPorts = unionStringList(transitions1->transition->ports, transitions2->transition->ports);
-                                tempNPorts = listLength(tempPorts);
-                                tempTransition->blocked = 0;
-                            }
-                            if (intersection1 == NULL && intersection2 == NULL)
-                            {
-                                tempPorts = unionStringList(transitions1->transition->ports, transitions2->transition->ports);
-                                tempNPorts = listLength(tempPorts);
-                            }
+                            // tempTransition->blocked = 2;
+                            // if (!equalPorts(transitions1->transition, transitions2->transition))
+                            // {
+                            tempPorts = unionStringList(transitions1->transition->ports, transitions2->transition->ports);
+                            tempNPorts = listLength(tempPorts);
+                            tempTransition->blocked = 0;
+                            // }
+                            // if (intersection1 == NULL && intersection2 == NULL)
+                            // {
+                            //     tempPorts = unionStringList(transitions1->transition->ports, transitions2->transition->ports);
+                            //     tempNPorts = listLength(tempPorts);
+                            // }
                             tempState = findState(tempStates, concat);
                             tempTransition->start = stateStart;
                             tempTransition->end = tempState;

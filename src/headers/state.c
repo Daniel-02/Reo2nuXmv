@@ -46,8 +46,11 @@ void delConditionList(struct ConditionList *conditions)
 void delTransition(struct Transition *transition)
 {
     delStringList(transition->ports);
-    free(transition->condition);
-    free(transition);
+    if (transition)
+    {
+        free(transition->condition);
+        free(transition);
+    }
 }
 
 void delTransitionList(struct TransitionList *transitions)
@@ -204,7 +207,7 @@ struct StringList *addString(struct StringList *stringlist, char *string)
     if (stringlist == NULL)
     {
         stringlist = (struct StringList *)malloc(sizeof(struct StringList));
-        stringlist->string = (char *)malloc(600 * sizeof(char));
+        stringlist->string = (char *)malloc(1205 * sizeof(char));
         strcpy(stringlist->string, string);
         stringlist->nextString = NULL;
         return stringlist;
@@ -213,7 +216,7 @@ struct StringList *addString(struct StringList *stringlist, char *string)
     while (tempString->nextString != NULL)
         tempString = tempString->nextString;
     tempString->nextString = (struct StringList *)malloc(sizeof(struct StringList));
-    tempString->nextString->string = (char *)malloc(600 * sizeof(char));
+    tempString->nextString->string = (char *)malloc(1205 * sizeof(char));
     strcpy(tempString->nextString->string, string);
     tempString->nextString->nextString = NULL;
     return stringlist;
@@ -224,7 +227,8 @@ void delStringList(struct StringList *stringList)
     if (stringList == NULL)
         return;
     delStringList(stringList->nextString);
-    free(stringList->string);
+    if (stringList->string != NULL)
+        free(stringList->string);
     free(stringList);
 }
 
